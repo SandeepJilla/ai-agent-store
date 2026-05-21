@@ -13,7 +13,11 @@ const assert = (condition, message) => {
 
 assert(document.title.includes('AgentMart'), 'title should include AgentMart');
 assert(document.querySelector('h1')?.textContent.includes('Buy and sell AI agents'), 'hero headline missing');
-assert(document.querySelectorAll('.agent-card').length >= 10, 'expected store to include at least ten agent cards');
+assert(document.querySelectorAll('.agent-card').length >= 6, 'expected store to include at least six agent cards');
+assert(!html.includes('Deal Radar Agent'), 'Deal Radar placeholder card should be removed');
+assert(!html.includes('Refund Advocate'), 'Refund Advocate placeholder card should be removed');
+assert(!html.includes('Lead Scout'), 'Lead Scout placeholder card should be removed');
+assert(!html.includes('Backoffice Operator'), 'Backoffice Operator placeholder card should be removed');
 assert(document.querySelector('[data-agent="local-business-receptionist"]'), 'Local Business AI Receptionist listing missing');
 assert(document.querySelector('[data-agent="ai-research-report-agent"]'), 'AI Research/Report Agent listing missing');
 assert(document.querySelector('[data-agent="small-business-customer-support-agent"]'), 'Small Business Customer Support Agent listing missing');
