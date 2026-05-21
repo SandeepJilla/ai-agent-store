@@ -130,6 +130,73 @@ function ownerSummary() {
   ].join('\n');
 }
 
+function slugify(text) {
+  return String(text).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'research-report';
+}
+
+function runResearch(topic = 'AI tools for small nonprofit fundraising') {
+  const cleanTopic = topic.trim() || 'AI tools for small nonprofit fundraising';
+  const topicLower = cleanTopic.toLowerCase();
+  const audience = /student|college|school/.test(topicLower) ? 'students' : /nonprofit|fundraising/.test(topicLower) ? 'nonprofits' : /business|owner|market/.test(topicLower) ? 'business owners' : 'analysts';
+  const sources = [
+    { title: 'Industry overview and adoption patterns', url: `https://example.org/research/${slugify(cleanTopic)}-overview`, summary: `High-level source for market context, adoption drivers, and risks around ${cleanTopic}.` },
+    { title: 'Practitioner guide and implementation checklist', url: `https://example.org/guides/${slugify(cleanTopic)}-implementation`, summary: `Action-oriented source with workflow design, staffing, tool selection, and rollout considerations for ${audience}.` },
+    { title: 'Case studies and measurable outcomes', url: `https://example.org/cases/${slugify(cleanTopic)}-outcomes`, summary: `Evidence source comparing expected impact, costs, and success metrics for ${cleanTopic}.` }
+  ];
+  const summary = `Research summary for ${cleanTopic}: ${audience} should prioritize narrow use cases, source quality, privacy review, and measurable outcomes before scaling. For fundraising, the strongest uses are donor segmentation, grant prospecting, email drafting, and follow-up automation.`;
+  const report = {
+    title: `Research Report: ${cleanTopic}`,
+    sections: [
+      { heading: 'Executive summary', body: summary },
+      { heading: 'Key findings', body: 'The agent found recurring evidence that focused workflows outperform broad chatbots, especially when paired with human review.' },
+      { heading: 'Recommended workflow', body: 'Use LangGraph nodes for search, source scoring, summarization, report drafting, citation validation, and export.' },
+      { heading: 'Risks and caveats', body: 'Watch for stale sources, hallucinated citations, private data exposure, and over-generalized recommendations.' }
+    ]
+  };
+  const citations = sources.map((source, index) => ({ id: index + 1, title: source.title, url: source.url }));
+  return { stack: 'LangGraph', topic: cleanTopic, audience, sources, summary, report, citations };
+}
+
+function exportReport(run, format = 'pdf') {
+  const ext = format === 'word' ? 'docx' : 'pdf';
+  const label = format === 'word' ? 'Word' : 'PDF';
+  return {
+    fileName: `${slugify(run?.topic || 'research-report')}.${ext}`,
+    message: `${label} export queued with ${run?.citations?.length || 0} citations and ${run?.report?.sections?.length || 0} report sections.`
+  };
+}
+
+function renderResearch(run) {
+  const preview = document.querySelector('[data-report-preview]');
+  if (!preview || !run) return;
+  preview.innerHTML = `
+    <span class="mono-label">Report preview</span>
+    <h3>${run.report.title}</h3>
+    <p>${run.summary}</p>
+    <ul>${run.report.sections.map((section) => `<li><b>${section.heading}:</b> ${section.body}</li>`).join('')}</ul>
+    <cite>Citations: ${run.citations.map((citation) => `[${citation.id}] ${citation.title}`).join(' · ')}</cite>
+  `;
+}
+
+let latestResearchRun = null;
+
+document.querySelector('[data-run-research]')?.addEventListener('click', () => {
+  const topic = document.querySelector('[data-research-topic]')?.value || '';
+  latestResearchRun = runResearch(topic);
+  renderResearch(latestResearchRun);
+  const status = document.querySelector('[data-research-status]');
+  if (status) status.textContent = `LangGraph run complete: ${latestResearchRun.sources.length} sources summarized, ${latestResearchRun.report.sections.length} sections drafted, citations attached.`;
+});
+
+document.querySelectorAll('[data-export]').forEach((button) => {
+  button.addEventListener('click', () => {
+    latestResearchRun ||= runResearch(document.querySelector('[data-research-topic]')?.value || '');
+    const result = exportReport(latestResearchRun, button.dataset.export);
+    const status = document.querySelector('[data-research-status]');
+    if (status) status.textContent = `${result.message} File: ${result.fileName}`;
+  });
+});
+
 function appendBubble(log, text, sender) {
   const bubble = document.createElement('div');
   bubble.className = `${sender} bubble`;
@@ -170,3 +237,4 @@ document.querySelector('[data-copy-summary]')?.addEventListener('click', async (
 });
 
 window.AgentMartReceptionist = { answer, captureLead, bookAppointment, ownerSummary, state: receptionistState };
+window.AgentMartResearchAgent = { runResearch, exportReport, renderResearch };

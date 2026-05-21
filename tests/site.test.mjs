@@ -13,8 +13,9 @@ const assert = (condition, message) => {
 
 assert(document.title.includes('AgentMart'), 'title should include AgentMart');
 assert(document.querySelector('h1')?.textContent.includes('Buy and sell AI agents'), 'hero headline missing');
-assert(document.querySelectorAll('.agent-card').length >= 5, 'expected store to include at least five agent cards');
+assert(document.querySelectorAll('.agent-card').length >= 6, 'expected store to include at least six agent cards');
 assert(document.querySelector('[data-agent="local-business-receptionist"]'), 'Local Business AI Receptionist listing missing');
+assert(document.querySelector('[data-agent="ai-research-report-agent"]'), 'AI Research/Report Agent listing missing');
 assert(document.querySelector('#receptionist-demo'), 'interactive receptionist demo missing');
 assert(document.querySelector('[data-channel="website-chat"]'), 'website chat channel missing');
 assert(document.querySelector('[data-channel="whatsapp"]'), 'WhatsApp channel missing');
@@ -26,10 +27,33 @@ assert(document.querySelector('script[src="app.js"]'), 'script link missing');
 assert(css.includes('@media (max-width: 920px)'), 'responsive breakpoint missing');
 assert(css.includes('prefers-reduced-motion'), 'reduced motion handling missing');
 assert(css.includes('.receptionist-demo'), 'receptionist CSS missing');
+assert(document.querySelector('#research-demo'), 'interactive research agent demo missing');
+assert(document.querySelector('[data-stack="langgraph"]'), 'LangGraph stack badge missing');
+assert(document.querySelector('[data-research-step="search"]'), 'research search step missing');
+assert(document.querySelector('[data-research-step="summarize"]'), 'research summarize step missing');
+assert(document.querySelector('[data-research-step="report"]'), 'research report step missing');
+assert(document.querySelector('[data-research-step="citations"]'), 'research citations step missing');
+assert(document.querySelector('[data-export="pdf"]'), 'PDF export button missing');
+assert(document.querySelector('[data-export="word"]'), 'Word export button missing');
+assert(css.includes('.research-demo'), 'research CSS missing');
 
-const script = new dom.window.Function(`${app}; return window.AgentMartReceptionist;`);
-const receptionist = script();
+const script = new dom.window.Function(`${app}; return { receptionist: window.AgentMartReceptionist, research: window.AgentMartResearchAgent };`);
+const { receptionist, research } = script();
 assert(receptionist, 'AgentMartReceptionist API missing');
+assert(research, 'AgentMartResearchAgent API missing');
+
+const researchRun = research.runResearch('AI tools for small nonprofit fundraising');
+assert(researchRun.stack === 'LangGraph', 'research agent should declare LangGraph stack');
+assert(researchRun.sources.length >= 3, 'research agent should return multiple sources');
+assert(researchRun.summary.includes('fundraising'), 'research summary should reflect topic');
+assert(researchRun.report.sections.length >= 4, 'research report should contain structured sections');
+assert(researchRun.citations.every((citation) => /https?:\/\//.test(citation.url)), 'citations should include URLs');
+
+const pdfExport = research.exportReport(researchRun, 'pdf');
+assert(pdfExport.fileName.endsWith('.pdf') && /PDF export queued/i.test(pdfExport.message), 'PDF export simulation missing');
+
+const wordExport = research.exportReport(researchRun, 'word');
+assert(wordExport.fileName.endsWith('.docx') && /Word export queued/i.test(wordExport.message), 'Word export simulation missing');
 
 const hoursAnswer = receptionist.answer('Are you open on Saturday?');
 assert(/Saturday/i.test(hoursAnswer.text) && /10:00 AM/i.test(hoursAnswer.text), 'hours answer should mention Saturday hours');

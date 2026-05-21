@@ -112,6 +112,13 @@
           <ul><li>Website chat widget</li><li>WhatsApp + Telegram intake</li><li>Owner summary handoff</li></ul>
           <a class="agent-link" href="#receptionist-demo">Try live demo →</a>
         </article>
+        <article class="agent-card featured-agent research-card" data-category="research" data-agent="ai-research-report-agent">
+          <div class="card-top"><span class="tag purple">Research</span><span class="price">from $29/report</span></div>
+          <h3>AI Research/Report Agent</h3>
+          <p>Runs controlled LangGraph research workflows for students, analysts, business owners, and nonprofits.</p>
+          <ul><li>Web source discovery</li><li>Summaries + citations</li><li>PDF/Word export handoff</li></ul>
+          <a class="agent-link" href="#research-demo">Try research workflow →</a>
+        </article>
       </div>
     </section>
 
@@ -156,6 +163,41 @@
           <div class="summary-top"><span class="mono-label">Owner summary</span><button type="button" data-copy-summary>Copy</button></div>
           <pre data-summary-output>No qualified leads yet. Try the booking prompt to generate a lead summary.</pre>
         </aside>
+      </div>
+    </section>
+
+    <section class="research-demo section-shell" id="research-demo" aria-label="AI Research Report Agent demo">
+      <div class="section-heading centered">
+        <span class="mono-label">LangGraph workflow</span>
+        <h2>AI Research/Report Agent</h2>
+        <p>Built for repeatable research tasks: search the web, summarize sources, draft a cited report, then export it for sharing.</p>
+      </div>
+      <div class="research-layout">
+        <aside class="workflow-map">
+          <span class="tag purple" data-stack="langgraph">Stack: LangGraph</span>
+          <h3>Controlled multi-step flow</h3>
+          <ol>
+            <li data-research-step="search"><b>Search web</b><span>Collect credible, topic-relevant sources.</span></li>
+            <li data-research-step="summarize"><b>Summarize</b><span>Extract claims, stats, and caveats.</span></li>
+            <li data-research-step="report"><b>Create report</b><span>Turn notes into executive-ready sections.</span></li>
+            <li data-research-step="citations"><b>Citations</b><span>Attach URLs and publication context.</span></li>
+          </ol>
+        </aside>
+        <div class="research-console">
+          <label for="research-topic">Research topic</label>
+          <textarea id="research-topic" data-research-topic>AI tools for small nonprofit fundraising</textarea>
+          <button class="dark-button" type="button" data-run-research>Run research workflow</button>
+          <div class="export-row">
+            <button type="button" data-export="pdf">Export PDF</button>
+            <button type="button" data-export="word">Export Word</button>
+          </div>
+          <div class="research-status" data-research-status>Ready to run web research.</div>
+        </div>
+        <article class="report-preview" data-report-preview>
+          <span class="mono-label">Report preview</span>
+          <h3>Waiting for topic…</h3>
+          <p>Run the workflow to generate a cited report outline with source summaries and export options.</p>
+        </article>
       </div>
     </section>
 
