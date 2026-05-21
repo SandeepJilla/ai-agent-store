@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgentMart — AI Agent Store</title>
+  <meta name="description" content="A premium storefront for buying and selling useful AI agents for work, growth, ops, support, and research." />
+  <meta property="og:title" content="AgentMart — AI Agent Store" />
+  <meta property="og:description" content="Discover deploy-ready AI agents for real business workflows." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header" data-elevated="false">
+    <a class="brand" href="#top" aria-label="AgentMart home">
+      <span class="brand-mark">A</span>
+      <span>AgentMart</span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#agents">Agents</a>
+      <a href="#how">How it works</a>
+      <a href="#builders">For builders</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <div class="header-actions">
+      <a class="ghost-button" href="mailto:hello@agentmart.ai?subject=I%20want%20to%20sell%20AI%20agents">Sell agents</a>
+      <a class="dark-button" href="#agents">Browse store</a>
+    </div>
+    <button class="menu-button" aria-label="Open menu" aria-expanded="false">☰</button>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="pulse"></span> Launching the marketplace for practical AI workers</div>
+        <h1>Buy and sell AI agents that complete real work.</h1>
+        <p class="hero-lede">AgentMart is a polished storefront for deploy-ready AI agents: deal monitors, inbox assistants, research copilots, CRM automations, support triage, and custom operators for growing teams.</p>
+        <div class="hero-actions">
+          <a class="dark-button large" href="#agents">Explore launch catalog</a>
+          <a class="ghost-button large" href="#builders">Become a builder</a>
+        </div>
+        <div class="trust-row" aria-label="Marketplace trust points">
+          <span>Verified workflows</span>
+          <span>Usage-based pricing</span>
+          <span>Human handoff ready</span>
+        </div>
+      </div>
+      <div class="hero-panel" aria-label="Agent store preview">
+        <div class="browser-bar"><span></span><span></span><span></span><strong>agentmart.ai/store</strong></div>
+        <div class="market-search">
+          <span>⌘K</span>
+          <input aria-label="Search agents preview" value="Find agents for sales, support, ops…" readonly />
+        </div>
+        <div class="mini-grid">
+          <article class="mini-card active"><b>Deal Radar</b><small>Monitors communities and alerts only on high-signal offers.</small><em>Freebie + glitch finder</em></article>
+          <article class="mini-card"><b>Refund Advocate</b><small>Builds claims from receipts, flight events, and policy docs.</small><em>Travel + commerce</em></article>
+          <article class="mini-card"><b>Lead Qualifier</b><small>Researches inbound leads and drafts next-best actions.</small><em>Sales ops</em></article>
+          <article class="mini-card"><b>Inbox Triage</b><small>Labels, summarizes, and escalates messages with audit trails.</small><em>Admin</em></article>
+        </div>
+        <div class="terminal-card">
+          <div><span class="dot blue"></span> deploy agent</div>
+          <code>agentmart install deal-radar --workspace acme</code>
+          <p>Connected to Telegram, Gmail, GitHub, and browser tools.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell metrics" aria-label="Marketplace metrics">
+      <div><strong>24h</strong><span>target launch time for new agent listings</span></div>
+      <div><strong>3</strong><span>plans per agent: trial, pro, managed</span></div>
+      <div><strong>0%</strong><span>platform fee for first beta builders</span></div>
+    </section>
+
+    <section class="section-shell split" id="agents">
+      <div class="section-heading">
+        <span class="mono-label">Launch catalog</span>
+        <h2>Start with agents people already ask for.</h2>
+        <p>The first store shelf focuses on automations with clear ROI, repeat usage, and simple handoff paths.</p>
+      </div>
+      <div class="agent-grid">
+        <article class="agent-card" data-category="shopping">
+          <div class="card-top"><span class="tag blue">Alerts</span><span class="price">from $9/mo</span></div>
+          <h3>Deal Radar Agent</h3>
+          <p>Tracks deal channels, filters false positives, and sends only genuinely high-value freebies, glitches, and major markdowns.</p>
+          <ul><li>Telegram delivery</li><li>False-positive guardrails</li><li>Daily digest option</li></ul>
+        </article>
+        <article class="agent-card" data-category="travel">
+          <div class="card-top"><span class="tag pink">Claims</span><span class="price">from $19/case</span></div>
+          <h3>Refund Advocate</h3>
+          <p>Turns screenshots, itineraries, and policy pages into refund requests, emails, and form-ready claims.</p>
+          <ul><li>Evidence extraction</li><li>Case tracking</li><li>Follow-up reminders</li></ul>
+        </article>
+        <article class="agent-card" data-category="sales">
+          <div class="card-top"><span class="tag red">Revenue</span><span class="price">from $49/mo</span></div>
+          <h3>Lead Scout</h3>
+          <p>Researches prospects, scores intent, drafts outreach, and keeps CRM notes clean before a human steps in.</p>
+          <ul><li>Company research</li><li>Fit scoring</li><li>CRM-ready summaries</li></ul>
+        </article>
+        <article class="agent-card" data-category="ops">
+          <div class="card-top"><span class="tag black">Ops</span><span class="price">custom</span></div>
+          <h3>Backoffice Operator</h3>
+          <p>Handles recurring web, spreadsheet, email, and reporting work with logs, approvals, and exception handling.</p>
+          <ul><li>Browser automation</li><li>Approval gates</li><li>Audit logs</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="workflow" id="how">
+      <div class="section-shell">
+        <div class="section-heading centered">
+          <span class="mono-label">How it works</span>
+          <h2>Three steps from listing to delivered work.</h2>
+        </div>
+        <div class="steps">
+          <article><span class="step-number develop">01</span><h3>Pick an agent</h3><p>Browse by outcome, channel, integration, or price. Each listing explains exactly what the agent does and where humans approve actions.</p></article>
+          <article><span class="step-number preview">02</span><h3>Connect tools</h3><p>Authorize only the apps the agent needs — Gmail, Telegram, GitHub, Sheets, browser, or custom APIs.</p></article>
+          <article><span class="step-number ship">03</span><h3>Run the workflow</h3><p>Agents deliver results, keep logs, escalate uncertainty, and improve through customer feedback.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell builders" id="builders">
+      <div>
+        <span class="mono-label">For builders</span>
+        <h2>Package your automations as products.</h2>
+        <p>AgentMart gives builders a storefront, onboarding checklist, listing format, pricing rails, and managed delivery options so useful agents can be sold like software.</p>
+      </div>
+      <div class="builder-console">
+        <div class="console-row"><span>listing.yml</span><b>validated</b></div>
+        <pre><code>name: Refund Advocate
+category: Travel
+pricing: per_case
+handoff: required_before_submit
+integrations:
+  - gmail
+  - browser
+  - documents</code></pre>
+      </div>
+    </section>
+
+    <section class="section-shell pricing" id="pricing">
+      <div class="section-heading centered">
+        <span class="mono-label">Pricing model</span>
+        <h2>Simple enough to launch today.</h2>
+        <p>Start with transparent plans while the marketplace learns what buyers value most.</p>
+      </div>
+      <div class="pricing-grid">
+        <article><h3>Trial</h3><strong>$0</strong><p>Limited runs, perfect for proving an agent works.</p><a href="mailto:hello@agentmart.ai?subject=Trial%20agent%20access">Request access</a></article>
+        <article class="featured"><h3>Pro Agent</h3><strong>$9–$99</strong><p>Monthly access for recurring workflows with notifications and logs.</p><a href="#agents">Browse agents</a></article>
+        <article><h3>Managed</h3><strong>Custom</strong><p>White-glove setup, integrations, and ongoing monitoring.</p><a href="mailto:hello@agentmart.ai?subject=Managed%20AI%20agent">Talk to us</a></article>
+      </div>
+    </section>
+
+    <section class="final-cta section-shell">
+      <span class="mono-label">First step complete</span>
+      <h2>Turn agent ideas into a sellable catalog.</h2>
+      <p>This page is ready to become the public front door for your AI agent store.</p>
+      <a class="dark-button large" href="mailto:hello@agentmart.ai?subject=List%20my%20AI%20agent">List your first agent</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="brand"><span class="brand-mark">A</span><span>AgentMart</span></div>
+    <p>AI agent marketplace concept. Built for fast iteration.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

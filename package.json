@@ -1,0 +1,13 @@
+{
+  "name": "agentmart-ai-agent-store",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A premium static landing page for an AI agent marketplace.",
+  "scripts": {
+    "start": "python3 -m http.server 4174",
+    "test": "node tests/site.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
