@@ -126,6 +126,27 @@
           <ul><li>FAQ docs + policy answers</li><li>Human escalation + tickets</li><li>Website, email, WhatsApp, Telegram</li></ul>
           <a class="agent-link" href="#support-demo">Try support workflow →</a>
         </article>
+        <article class="agent-card featured-agent document-card" data-category="compliance" data-agent="document-qa-compliance-agent">
+          <div class="card-top"><span class="tag teal">Compliance</span><span class="price">from $249/mo</span></div>
+          <h3>Document Q&A / Compliance Agent</h3>
+          <p>Lets universities, nonprofits, clinics, real estate teams, and HR teams ask cited questions across PDFs, Word docs, and policies.</p>
+          <ul><li>PDF/Word policy upload</li><li>Cited RAG answers</li><li>Summaries + document comparison</li></ul>
+          <a class="agent-link" href="#document-demo">Try document workflow →</a>
+        </article>
+        <article class="agent-card featured-agent email-card" data-category="productivity" data-agent="email-assistant-agent">
+          <div class="card-top"><span class="tag blue">Email</span><span class="price">from $99/mo</span></div>
+          <h3>Email Assistant Agent</h3>
+          <p>Summarizes unread mail, drafts replies, categorizes important messages, creates reminders, and extracts invoices or receipts.</p>
+          <ul><li>OpenAI Agents SDK</li><li>Gmail API + FastAPI</li><li>Invoices, reminders, reply drafts</li></ul>
+          <a class="agent-link" href="#email-demo">Try email workflow →</a>
+        </article>
+        <article class="agent-card featured-agent scheduling-card" data-category="local-business" data-agent="appointment-booking-scheduling-agent">
+          <div class="card-top"><span class="tag green">Scheduling</span><span class="price">from $179/mo</span></div>
+          <h3>Appointment Booking / Scheduling Agent</h3>
+          <p>Checks calendar availability, books appointments, sends reminders, handles reschedules, and answers service questions.</p>
+          <ul><li>LangGraph workflow</li><li>Google Calendar API</li><li>Twilio/WhatsApp reminders</li></ul>
+          <a class="agent-link" href="#scheduling-demo">Try scheduling workflow →</a>
+        </article>
       </div>
     </section>
 
@@ -243,6 +264,45 @@
           <div class="artifact" data-support-output="ticket"><span class="mono-label">Support ticket</span><pre data-ticket-output>No ticket yet.</pre></div>
           <div class="artifact" data-support-output="summary"><span class="mono-label">Issue summary</span><pre data-issue-summary>No issue summary yet.</pre></div>
         </aside>
+      </div>
+    </section>
+
+    <section class="document-demo section-shell" id="document-demo" aria-label="Document Q&A compliance agent demo">
+      <div class="section-heading centered">
+        <span class="mono-label">LangGraph + RAG + vector database</span>
+        <h2>Document Q&A / Compliance Agent</h2>
+        <p>Upload policies, PDFs, and Word docs, then ask questions, get cited answers, generate summaries, and compare versions.</p>
+      </div>
+      <div class="ops-layout">
+        <aside class="ops-stack"><span class="tag teal" data-doc-stack="langgraph-rag-vector-db">LangGraph + RAG + vector DB</span><h3>Compliance-ready document search</h3><p>Designed for universities, nonprofits, clinics, real estate, and HR teams that need answers with traceable source references.</p></aside>
+        <div class="ops-console"><label for="doc-question">Question across uploaded policies</label><textarea id="doc-question" data-doc-question>Can volunteers access patient records under the clinic privacy policy?</textarea><button class="dark-button" type="button" data-run-doc>Ask documents</button><button type="button" data-compare-docs>Compare documents</button></div>
+        <aside class="ops-artifacts"><div class="artifact" data-doc-output="answer"><span class="mono-label">Cited answer</span><pre data-doc-answer>No answer yet.</pre></div><div class="artifact" data-doc-output="compare"><span class="mono-label">Document comparison</span><pre data-doc-compare>No comparison yet.</pre></div></aside>
+      </div>
+    </section>
+
+    <section class="email-demo section-shell" id="email-demo" aria-label="Email assistant agent demo">
+      <div class="section-heading centered">
+        <span class="mono-label">OpenAI Agents SDK + Gmail API + FastAPI</span>
+        <h2>Email Assistant Agent</h2>
+        <p>Very sellable to busy professionals: summarize unread emails, draft replies, categorize priorities, create follow-up reminders, and extract invoices or receipts.</p>
+      </div>
+      <div class="ops-layout">
+        <aside class="ops-stack"><span class="tag blue" data-email-stack="openai-agents-gmail-fastapi">Agents SDK + Gmail + FastAPI</span><h3>Inbox work without inbox chaos</h3><p>Turns unread email into an action list with reply drafts, finance extraction, and reminders.</p></aside>
+        <div class="ops-console"><button class="dark-button" type="button" data-run-email>Summarize unread emails</button><button type="button" data-draft-email>Draft client reply</button></div>
+        <aside class="ops-artifacts"><div class="artifact" data-email-output="summary"><span class="mono-label">Unread digest</span><pre data-email-summary>No digest yet.</pre></div><div class="artifact" data-email-output="reply"><span class="mono-label">Draft reply + reminder</span><pre data-email-reply>No draft yet.</pre></div></aside>
+      </div>
+    </section>
+
+    <section class="scheduling-demo section-shell" id="scheduling-demo" aria-label="Appointment booking scheduling agent demo">
+      <div class="section-heading centered">
+        <span class="mono-label">LangGraph + Google Calendar API + Twilio/WhatsApp</span>
+        <h2>Appointment Booking / Scheduling Agent</h2>
+        <p>Useful for salons, clinics, repair shops, and consultants that need calendar-aware booking, reminders, rescheduling, and service answers.</p>
+      </div>
+      <div class="ops-layout">
+        <aside class="ops-stack"><span class="tag green" data-scheduling-stack="langgraph-calendar-twilio">LangGraph + Calendar + Twilio</span><h3>Books the appointment and follows up</h3><p>Checks availability, confirms the service, writes to calendar, and sends reminders through WhatsApp or SMS.</p></aside>
+        <div class="ops-console"><label for="schedule-request">Customer request</label><textarea id="schedule-request" data-schedule-request>Book HVAC repair for Ravi Shah on Tuesday afternoon via WhatsApp.</textarea><button class="dark-button" type="button" data-run-scheduling>Book appointment</button><button type="button" data-reschedule>Reschedule to Wednesday</button></div>
+        <aside class="ops-artifacts"><div class="artifact" data-scheduling-output="booking"><span class="mono-label">Booking</span><pre data-scheduling-booking>No booking yet.</pre></div><div class="artifact" data-scheduling-output="reminder"><span class="mono-label">Reminder</span><pre data-scheduling-reminder>No reminder yet.</pre></div></aside>
       </div>
     </section>
 

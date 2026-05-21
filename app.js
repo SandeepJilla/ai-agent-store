@@ -275,6 +275,111 @@ document.querySelectorAll('[data-support-prompt]').forEach((button) => {
   });
 });
 
+const documentCorpus = [
+  { title: 'Clinic Privacy Policy', citation: 'Clinic Privacy Policy §2.1', text: 'Patient records may only be accessed for a defined care or operations purpose using the minimum necessary standard.' },
+  { title: 'Volunteer Handbook', citation: 'Volunteer Handbook p. 7', text: 'Volunteers cannot access patient records unless explicitly authorized, trained, and supervised.' },
+  { title: 'HR Handbook', citation: 'HR Handbook §4.3', text: 'Employee files are confidential and retained under role-based access controls.' }
+];
+
+function askQuestion(question = '') {
+  const text = normalize(question);
+  const citations = documentCorpus.filter((doc) => /patient|clinic|volunteer|privacy|record/.test(text) ? /Clinic|Volunteer/.test(doc.title) : true).slice(0, 2);
+  return {
+    question,
+    answer: `Based on uploaded policies, access should be denied unless the person has a documented role-based need and only the minimum necessary information is used. Volunteers need explicit authorization, training, and supervision before any record access.`,
+    citations
+  };
+}
+
+function generateSummary(documentName = 'clinic privacy policy') {
+  return `Summary of ${documentName}: the policy defines who can access sensitive records, requires role-based controls, limits usage to minimum necessary information, and documents escalation steps for exceptions.`;
+}
+
+function compareDocuments(a = 'HR handbook', b = 'clinic privacy policy') {
+  return {
+    summary: `Key differences between ${a} and ${b}: one focuses on employee records and HR retention while the other focuses on patient privacy, care operations, and access restrictions.`,
+    items: ['Different protected data classes', 'Different approval paths for exceptions', 'Different retention and audit requirements']
+  };
+}
+
+function renderDocumentQA(question) {
+  const answer = askQuestion(question);
+  const compare = compareDocuments();
+  const answerOutput = document.querySelector('[data-doc-answer]');
+  const compareOutput = document.querySelector('[data-doc-compare]');
+  if (answerOutput) answerOutput.textContent = `${answer.answer}\n\nCitations:\n${answer.citations.map((c) => `- ${c.citation}: ${c.text}`).join('\n')}`;
+  if (compareOutput) compareOutput.textContent = `${generateSummary('clinic privacy policy')}\n\n${compare.summary}\n- ${compare.items.join('\n- ')}`;
+  return { answer, compare };
+}
+
+document.querySelector('[data-run-doc]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
+document.querySelector('[data-compare-docs]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
+
+const sampleEmails = [
+  { from: 'client@acme.co', subject: 'Proposal follow up', category: 'urgent', body: 'Can you send updated pricing by Friday?' },
+  { from: 'billing@vendor.com', subject: 'Invoice #1842', category: 'finance', body: 'Attached invoice for $842 due next week.' },
+  { from: 'events@local.org', subject: 'Receipt for registration', category: 'finance', body: 'Receipt total $129.' }
+];
+
+function summarizeUnread() {
+  return {
+    total: sampleEmails.length,
+    important: sampleEmails.filter((email) => ['urgent', 'finance'].includes(email.category)),
+    extracted: [{ type: 'invoice', vendor: 'Vendor', amount: '$842', due: 'next week' }, { type: 'receipt', vendor: 'Local Org', amount: '$129' }],
+    summary: '3 unread emails: 1 urgent client follow-up, 1 invoice, and 1 receipt. Recommended action: reply to client and save finance attachments.'
+  };
+}
+
+function draftReply(context = 'client follow up') {
+  return { body: `Thanks for the note — I’ll send the updated pricing and next steps today. Appreciate the follow-up.`, reminder: `Create follow up reminder for ${context} tomorrow at 9 AM.` };
+}
+
+function categorizeEmails() {
+  return sampleEmails.reduce((counts, email) => ({ ...counts, [email.category]: (counts[email.category] || 0) + 1 }), { urgent: 0, finance: 0, normal: 0 });
+}
+
+function renderEmailAssistant() {
+  const digest = summarizeUnread();
+  const reply = draftReply('client follow up');
+  const summaryOutput = document.querySelector('[data-email-summary]');
+  const replyOutput = document.querySelector('[data-email-reply]');
+  if (summaryOutput) summaryOutput.textContent = `${digest.summary}\n\nImportant:\n${digest.important.map((e) => `- ${e.subject} (${e.category})`).join('\n')}\n\nExtracted: ${digest.extracted.map((x) => `${x.type} ${x.amount}`).join(', ')}`;
+  if (replyOutput) replyOutput.textContent = `${reply.body}\n\nReminder: ${reply.reminder}`;
+  return { digest, reply };
+}
+
+document.querySelector('[data-run-email]')?.addEventListener('click', renderEmailAssistant);
+document.querySelector('[data-draft-email]')?.addEventListener('click', renderEmailAssistant);
+
+const schedulingState = { appointments: [] };
+function checkAvailability(preferredTime = 'Tuesday afternoon') {
+  return { available: true, slot: preferredTime.includes('Wednesday') ? 'Wednesday 10:00 AM' : 'Tuesday 2:30 PM', calendar: 'Google Calendar' };
+}
+function bookSchedulingAppointment({ name, service, preferredTime, channel }) {
+  const availability = checkAvailability(preferredTime);
+  const appointment = { id: `APT-${String(schedulingState.appointments.length + 501).padStart(4, '0')}`, name: name || 'Customer', service: service || 'consultation', slot: availability.slot, channel: channel || 'WhatsApp', confirmed: true };
+  appointment.reminder = `Reminder scheduled via ${appointment.channel}: ${appointment.service} for ${appointment.name} at ${appointment.slot}.`;
+  schedulingState.appointments.push(appointment);
+  return appointment;
+}
+function rescheduleAppointment(id, preferredTime = 'Wednesday morning') {
+  const appointment = schedulingState.appointments.find((item) => item.id === id) || schedulingState.appointments.at(-1) || bookSchedulingAppointment({});
+  appointment.slot = checkAvailability(preferredTime).slot;
+  appointment.reminder = `Updated reminder via ${appointment.channel}: ${appointment.service} moved to ${appointment.slot}.`;
+  return appointment;
+}
+function renderScheduling(reschedule = false) {
+  const appointment = reschedule ? rescheduleAppointment(null, 'Wednesday morning') : bookSchedulingAppointment({ name: 'Ravi Shah', service: 'HVAC repair', preferredTime: 'Tuesday afternoon', channel: 'WhatsApp' });
+  const bookingOutput = document.querySelector('[data-scheduling-booking]');
+  const reminderOutput = document.querySelector('[data-scheduling-reminder]');
+  if (bookingOutput) bookingOutput.textContent = `${appointment.id}\n${appointment.name} · ${appointment.service}\nSlot: ${appointment.slot}\nConfirmed: ${appointment.confirmed}`;
+  if (reminderOutput) reminderOutput.textContent = appointment.reminder;
+  return appointment;
+}
+
+document.querySelector('[data-run-scheduling]')?.addEventListener('click', () => renderScheduling(false));
+document.querySelector('[data-reschedule]')?.addEventListener('click', () => renderScheduling(true));
+
 function appendBubble(log, text, sender) {
   const bubble = document.createElement('div');
   bubble.className = `${sender} bubble`;
@@ -317,3 +422,6 @@ document.querySelector('[data-copy-summary]')?.addEventListener('click', async (
 window.AgentMartReceptionist = { answer, captureLead, bookAppointment, ownerSummary, state: receptionistState };
 window.AgentMartResearchAgent = { runResearch, exportReport, renderResearch };
 window.AgentMartSupportAgent = { answerFromDocs, createTicket, summarizeIssue, runSupportWorkflow, renderSupportWorkflow, state: supportState };
+window.AgentMartDocumentQAAgent = { askQuestion, generateSummary, compareDocuments, renderDocumentQA };
+window.AgentMartEmailAssistantAgent = { summarizeUnread, draftReply, categorizeEmails, renderEmailAssistant };
+window.AgentMartSchedulingAgent = { checkAvailability, bookAppointment: bookSchedulingAppointment, rescheduleAppointment, renderScheduling, state: schedulingState };

@@ -13,10 +13,13 @@ const assert = (condition, message) => {
 
 assert(document.title.includes('AgentMart'), 'title should include AgentMart');
 assert(document.querySelector('h1')?.textContent.includes('Buy and sell AI agents'), 'hero headline missing');
-assert(document.querySelectorAll('.agent-card').length >= 7, 'expected store to include at least seven agent cards');
+assert(document.querySelectorAll('.agent-card').length >= 10, 'expected store to include at least ten agent cards');
 assert(document.querySelector('[data-agent="local-business-receptionist"]'), 'Local Business AI Receptionist listing missing');
 assert(document.querySelector('[data-agent="ai-research-report-agent"]'), 'AI Research/Report Agent listing missing');
 assert(document.querySelector('[data-agent="small-business-customer-support-agent"]'), 'Small Business Customer Support Agent listing missing');
+assert(document.querySelector('[data-agent="document-qa-compliance-agent"]'), 'Document Q&A / compliance listing missing');
+assert(document.querySelector('[data-agent="email-assistant-agent"]'), 'Email Assistant listing missing');
+assert(document.querySelector('[data-agent="appointment-booking-scheduling-agent"]'), 'Appointment Booking listing missing');
 assert(document.querySelector('#receptionist-demo'), 'interactive receptionist demo missing');
 assert(document.querySelector('[data-channel="website-chat"]'), 'website chat channel missing');
 assert(document.querySelector('[data-channel="whatsapp"]'), 'WhatsApp channel missing');
@@ -48,11 +51,51 @@ assert(document.querySelector('[data-support-output="ticket"]'), 'support ticket
 assert(document.querySelector('[data-support-output="summary"]'), 'support issue summary panel missing');
 assert(css.includes('.support-demo'), 'support CSS missing');
 
-const script = new dom.window.Function(`${app}; return { receptionist: window.AgentMartReceptionist, research: window.AgentMartResearchAgent, support: window.AgentMartSupportAgent };`);
-const { receptionist, research, support } = script();
+assert(document.querySelector('#document-demo'), 'Document Q&A demo missing');
+assert(document.querySelector('[data-doc-stack="langgraph-rag-vector-db"]'), 'document stack badge missing');
+assert(document.querySelector('[data-doc-output="answer"]'), 'document cited answer output missing');
+assert(document.querySelector('[data-doc-output="compare"]'), 'document comparison output missing');
+assert(css.includes('.document-demo'), 'document CSS missing');
+assert(document.querySelector('#email-demo'), 'Email assistant demo missing');
+assert(document.querySelector('[data-email-stack="openai-agents-gmail-fastapi"]'), 'email stack badge missing');
+assert(document.querySelector('[data-email-output="summary"]'), 'email summary output missing');
+assert(document.querySelector('[data-email-output="reply"]'), 'email reply output missing');
+assert(css.includes('.email-demo'), 'email CSS missing');
+assert(document.querySelector('#scheduling-demo'), 'Scheduling demo missing');
+assert(document.querySelector('[data-scheduling-stack="langgraph-calendar-twilio"]'), 'scheduling stack badge missing');
+assert(document.querySelector('[data-scheduling-output="booking"]'), 'scheduling booking output missing');
+assert(document.querySelector('[data-scheduling-output="reminder"]'), 'scheduling reminder output missing');
+assert(css.includes('.scheduling-demo'), 'scheduling CSS missing');
+
+const script = new dom.window.Function(`${app}; return { receptionist: window.AgentMartReceptionist, research: window.AgentMartResearchAgent, support: window.AgentMartSupportAgent, documentQA: window.AgentMartDocumentQAAgent, email: window.AgentMartEmailAssistantAgent, scheduling: window.AgentMartSchedulingAgent };`);
+const { receptionist, research, support, documentQA, email, scheduling } = script();
 assert(receptionist, 'AgentMartReceptionist API missing');
 assert(research, 'AgentMartResearchAgent API missing');
 assert(support, 'AgentMartSupportAgent API missing');
+assert(documentQA, 'AgentMartDocumentQAAgent API missing');
+assert(email, 'AgentMartEmailAssistantAgent API missing');
+assert(scheduling, 'AgentMartSchedulingAgent API missing');
+
+const docAnswer = documentQA.askQuestion('Can volunteers access patient records under the clinic privacy policy?');
+assert(docAnswer.answer.includes('minimum necessary') && docAnswer.citations.length >= 2, 'document agent should produce cited compliance answer');
+const docCompare = documentQA.compareDocuments('HR handbook', 'clinic privacy policy');
+assert(/differences/i.test(docCompare.summary) && docCompare.items.length >= 2, 'document agent should compare documents');
+const docSummary = documentQA.generateSummary('clinic privacy policy');
+assert(/summary/i.test(docSummary.toLowerCase()) && /policy/i.test(docSummary.toLowerCase()), 'document agent should summarize policies');
+
+const emailDigest = email.summarizeUnread();
+assert(emailDigest.important.length >= 2 && /invoice/i.test(emailDigest.extracted[0].type), 'email assistant should summarize and extract invoices');
+const emailReply = email.draftReply('client follow up');
+assert(/Thanks/i.test(emailReply.body) && emailReply.reminder.includes('follow up'), 'email assistant should draft replies and reminders');
+const emailCategories = email.categorizeEmails();
+assert(emailCategories.urgent >= 1 && emailCategories.finance >= 1, 'email assistant should categorize important emails');
+
+const slot = scheduling.checkAvailability('Tuesday afternoon');
+assert(slot.available === true && /Tuesday/i.test(slot.slot), 'scheduling agent should check calendar availability');
+const scheduled = scheduling.bookAppointment({ name: 'Ravi Shah', service: 'HVAC repair', preferredTime: 'Tuesday afternoon', channel: 'WhatsApp' });
+assert(scheduled.confirmed && scheduled.reminder.includes('WhatsApp'), 'scheduling agent should book and send reminders');
+const rescheduled = scheduling.rescheduleAppointment(scheduled.id, 'Wednesday morning');
+assert(rescheduled.slot.includes('Wednesday'), 'scheduling agent should handle rescheduling');
 
 const supportFaq = support.answerFromDocs('What is your return policy?');
 assert(/30 days/i.test(supportFaq.answer) && supportFaq.source.includes('Return Policy'), 'support agent should answer FAQs from uploaded documents');
@@ -97,4 +140,4 @@ assert(booking.confirmed && /Saturday morning/i.test(booking.summary), 'booking 
 const ownerSummary = receptionist.ownerSummary();
 assert(/Ava Patel/i.test(ownerSummary) && /teeth whitening/i.test(ownerSummary) && /WhatsApp/i.test(ownerSummary), 'owner summary should include captured lead and booking details');
 
-console.log('AgentMart receptionist checks passed');
+console.log('AgentMart agent checks passed');
