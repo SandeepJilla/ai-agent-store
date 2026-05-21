@@ -13,9 +13,10 @@ const assert = (condition, message) => {
 
 assert(document.title.includes('AgentMart'), 'title should include AgentMart');
 assert(document.querySelector('h1')?.textContent.includes('Buy and sell AI agents'), 'hero headline missing');
-assert(document.querySelectorAll('.agent-card').length >= 6, 'expected store to include at least six agent cards');
+assert(document.querySelectorAll('.agent-card').length >= 7, 'expected store to include at least seven agent cards');
 assert(document.querySelector('[data-agent="local-business-receptionist"]'), 'Local Business AI Receptionist listing missing');
 assert(document.querySelector('[data-agent="ai-research-report-agent"]'), 'AI Research/Report Agent listing missing');
+assert(document.querySelector('[data-agent="small-business-customer-support-agent"]'), 'Small Business Customer Support Agent listing missing');
 assert(document.querySelector('#receptionist-demo'), 'interactive receptionist demo missing');
 assert(document.querySelector('[data-channel="website-chat"]'), 'website chat channel missing');
 assert(document.querySelector('[data-channel="whatsapp"]'), 'WhatsApp channel missing');
@@ -36,11 +37,34 @@ assert(document.querySelector('[data-research-step="citations"]'), 'research cit
 assert(document.querySelector('[data-export="pdf"]'), 'PDF export button missing');
 assert(document.querySelector('[data-export="word"]'), 'Word export button missing');
 assert(css.includes('.research-demo'), 'research CSS missing');
+assert(document.querySelector('#support-demo'), 'interactive customer support agent demo missing');
+assert(document.querySelector('[data-base="openai-cs-agents-demo"]'), 'OpenAI customer service agents demo base badge missing');
+assert(document.querySelector('[data-backend="fastapi"]'), 'FastAPI backend badge missing');
+assert(document.querySelector('[data-support-channel="website-chat"]'), 'support website chat channel missing');
+assert(document.querySelector('[data-support-channel="email"]'), 'support email channel missing');
+assert(document.querySelector('[data-support-channel="whatsapp"]'), 'support WhatsApp channel missing');
+assert(document.querySelector('[data-support-channel="telegram"]'), 'support Telegram channel missing');
+assert(document.querySelector('[data-support-output="ticket"]'), 'support ticket panel missing');
+assert(document.querySelector('[data-support-output="summary"]'), 'support issue summary panel missing');
+assert(css.includes('.support-demo'), 'support CSS missing');
 
-const script = new dom.window.Function(`${app}; return { receptionist: window.AgentMartReceptionist, research: window.AgentMartResearchAgent };`);
-const { receptionist, research } = script();
+const script = new dom.window.Function(`${app}; return { receptionist: window.AgentMartReceptionist, research: window.AgentMartResearchAgent, support: window.AgentMartSupportAgent };`);
+const { receptionist, research, support } = script();
 assert(receptionist, 'AgentMartReceptionist API missing');
 assert(research, 'AgentMartResearchAgent API missing');
+assert(support, 'AgentMartSupportAgent API missing');
+
+const supportFaq = support.answerFromDocs('What is your return policy?');
+assert(/30 days/i.test(supportFaq.answer) && supportFaq.source.includes('Return Policy'), 'support agent should answer FAQs from uploaded documents');
+
+const escalation = support.answerFromDocs('I was charged twice and want a refund now');
+assert(escalation.escalate === true && /human/i.test(escalation.answer), 'support agent should escalate billing-sensitive issues');
+
+const ticket = support.createTicket({ name: 'Nora Lee', email: 'nora@example.com', issue: 'charged twice', channel: 'email' });
+assert(ticket.id.startsWith('SUP-') && ticket.priority === 'high', 'support agent should create high-priority support ticket');
+
+const issueSummary = support.summarizeIssue(ticket);
+assert(/Nora Lee/i.test(issueSummary) && /charged twice/i.test(issueSummary) && /email/i.test(issueSummary), 'support agent should summarize customer issue');
 
 const researchRun = research.runResearch('AI tools for small nonprofit fundraising');
 assert(researchRun.stack === 'LangGraph', 'research agent should declare LangGraph stack');

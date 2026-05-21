@@ -119,6 +119,13 @@
           <ul><li>Web source discovery</li><li>Summaries + citations</li><li>PDF/Word export handoff</li></ul>
           <a class="agent-link" href="#research-demo">Try research workflow →</a>
         </article>
+        <article class="agent-card featured-agent support-card" data-category="support" data-agent="small-business-customer-support-agent">
+          <div class="card-top"><span class="tag orange">Support</span><span class="price">from $199/mo</span></div>
+          <h3>Small Business Customer Support Agent</h3>
+          <p>Answers customer questions from uploaded docs, escalates sensitive cases, creates tickets, and summarizes issues for the team.</p>
+          <ul><li>FAQ docs + policy answers</li><li>Human escalation + tickets</li><li>Website, email, WhatsApp, Telegram</li></ul>
+          <a class="agent-link" href="#support-demo">Try support workflow →</a>
+        </article>
       </div>
     </section>
 
@@ -198,6 +205,44 @@
           <h3>Waiting for topic…</h3>
           <p>Run the workflow to generate a cited report outline with source summaries and export options.</p>
         </article>
+      </div>
+    </section>
+
+    <section class="support-demo section-shell" id="support-demo" aria-label="Small Business Customer Support Agent demo">
+      <div class="section-heading centered">
+        <span class="mono-label">OpenAI CS agents demo base + FastAPI</span>
+        <h2>Small Business Customer Support Agent</h2>
+        <p>A support workflow buyers immediately understand: upload FAQs/policies, answer routine questions, escalate sensitive cases, create tickets, and summarize issues.</p>
+      </div>
+      <div class="support-layout">
+        <aside class="support-stack">
+          <div class="stack-badges">
+            <span class="tag orange" data-base="openai-cs-agents-demo">OpenAI customer service agents demo</span>
+            <span class="tag black" data-backend="fastapi">FastAPI backend</span>
+          </div>
+          <h3>Works across support channels</h3>
+          <div class="channel-row support-channels">
+            <span data-support-channel="website-chat">Website chat</span>
+            <span data-support-channel="email">Email</span>
+            <span data-support-channel="whatsapp">WhatsApp</span>
+            <span data-support-channel="telegram">Telegram</span>
+          </div>
+          <p>Best for local shops, service businesses, online stores, clinics, agencies, and nonprofits that answer the same questions every day.</p>
+        </aside>
+        <div class="support-console">
+          <label for="support-question">Customer question</label>
+          <textarea id="support-question" data-support-question>I was charged twice and want a refund now. Can someone help?</textarea>
+          <button class="dark-button" type="button" data-run-support>Answer + create ticket</button>
+          <div class="quick-prompts support-prompts">
+            <button type="button" data-support-prompt="What is your return policy?">FAQ answer</button>
+            <button type="button" data-support-prompt="I was charged twice and want a refund now. My name is Nora Lee, email nora@example.com.">Escalate</button>
+          </div>
+          <div class="support-answer" data-support-answer>Ready to answer from uploaded docs.</div>
+        </div>
+        <aside class="support-artifacts">
+          <div class="artifact" data-support-output="ticket"><span class="mono-label">Support ticket</span><pre data-ticket-output>No ticket yet.</pre></div>
+          <div class="artifact" data-support-output="summary"><span class="mono-label">Issue summary</span><pre data-issue-summary>No issue summary yet.</pre></div>
+        </aside>
       </div>
     </section>
 

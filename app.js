@@ -197,6 +197,84 @@ document.querySelectorAll('[data-export]').forEach((button) => {
   });
 });
 
+const supportDocs = [
+  { title: 'Return Policy FAQ', keywords: ['return', 'refund', 'exchange'], answer: 'Customers can return eligible items within 30 days with receipt or order number. Refunds go back to the original payment method after inspection.' },
+  { title: 'Shipping FAQ', keywords: ['shipping', 'delivery', 'tracking'], answer: 'Standard shipping takes 3–5 business days. Customers receive tracking by email once the order ships.' },
+  { title: 'Warranty and Setup Guide', keywords: ['warranty', 'setup', 'broken', 'repair'], answer: 'Most products include a 1-year limited warranty. The agent can collect photos, order number, and symptoms before routing to support.' }
+];
+
+const supportState = { tickets: [] };
+
+function answerFromDocs(question = '') {
+  const text = normalize(question);
+  const matchedDoc = supportDocs.find((doc) => doc.keywords.some((keyword) => text.includes(keyword))) || supportDocs[0];
+  const escalate = /charged twice|chargeback|refund now|angry|lawsuit|cancel|billing|medical|legal/.test(text);
+  const answer = escalate
+    ? `I found a likely billing-sensitive issue. I will create a support ticket and escalate this to a human with the relevant context. Suggested doc reference: ${matchedDoc.title}.`
+    : `${matchedDoc.answer} Source: ${matchedDoc.title}.`;
+  return { answer, source: matchedDoc.title, escalate };
+}
+
+function createTicket({ name, email, issue, channel }) {
+  const priority = /charged twice|billing|refund|angry|urgent|broken/.test(normalize(issue)) ? 'high' : 'normal';
+  const ticket = {
+    id: `SUP-${String(supportState.tickets.length + 101).padStart(4, '0')}`,
+    name: name || 'Unknown customer',
+    email: email || 'not provided',
+    issue: issue || 'General support question',
+    channel: channel || 'website chat',
+    priority,
+    status: priority === 'high' ? 'Escalated to human' : 'Queued for support team'
+  };
+  supportState.tickets.push(ticket);
+  return ticket;
+}
+
+function summarizeIssue(ticket) {
+  return [
+    `Ticket ${ticket.id} · ${ticket.priority.toUpperCase()} priority`,
+    `Customer: ${ticket.name} (${ticket.email})`,
+    `Channel: ${ticket.channel}`,
+    `Issue: ${ticket.issue}`,
+    `Status: ${ticket.status}`,
+    'Suggested next step: human support should reply with empathy, verify account/order details, and resolve or refund according to policy.'
+  ].join('\n');
+}
+
+function extractEmail(message) {
+  return message.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || 'not provided';
+}
+
+function runSupportWorkflow(message, channel = 'website chat') {
+  const response = answerFromDocs(message);
+  const ticket = createTicket({ name: extractName(message), email: extractEmail(message), issue: message, channel });
+  const summary = summarizeIssue(ticket);
+  return { response, ticket, summary };
+}
+
+function renderSupportWorkflow(message) {
+  const run = runSupportWorkflow(message, /email/i.test(message) ? 'email' : 'website chat');
+  const answerOutput = document.querySelector('[data-support-answer]');
+  const ticketOutput = document.querySelector('[data-ticket-output]');
+  const summaryOutput = document.querySelector('[data-issue-summary]');
+  if (answerOutput) answerOutput.textContent = run.response.answer;
+  if (ticketOutput) ticketOutput.textContent = `${run.ticket.id}\nPriority: ${run.ticket.priority}\nStatus: ${run.ticket.status}\nChannel: ${run.ticket.channel}`;
+  if (summaryOutput) summaryOutput.textContent = run.summary;
+  return run;
+}
+
+document.querySelector('[data-run-support]')?.addEventListener('click', () => {
+  renderSupportWorkflow(document.querySelector('[data-support-question]')?.value || '');
+});
+
+document.querySelectorAll('[data-support-prompt]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const input = document.querySelector('[data-support-question]');
+    if (input) input.value = button.dataset.supportPrompt;
+    renderSupportWorkflow(button.dataset.supportPrompt);
+  });
+});
+
 function appendBubble(log, text, sender) {
   const bubble = document.createElement('div');
   bubble.className = `${sender} bubble`;
@@ -238,3 +316,4 @@ document.querySelector('[data-copy-summary]')?.addEventListener('click', async (
 
 window.AgentMartReceptionist = { answer, captureLead, bookAppointment, ownerSummary, state: receptionistState };
 window.AgentMartResearchAgent = { runResearch, exportReport, renderResearch };
+window.AgentMartSupportAgent = { answerFromDocs, createTicket, summarizeIssue, runSupportWorkflow, renderSupportWorkflow, state: supportState };
