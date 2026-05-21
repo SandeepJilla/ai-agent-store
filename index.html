@@ -105,6 +105,57 @@
           <p>Handles recurring web, spreadsheet, email, and reporting work with logs, approvals, and exception handling.</p>
           <ul><li>Browser automation</li><li>Approval gates</li><li>Audit logs</li></ul>
         </article>
+        <article class="agent-card featured-agent" data-category="local-business" data-agent="local-business-receptionist">
+          <div class="card-top"><span class="tag green">New agent</span><span class="price">from $149/mo</span></div>
+          <h3>Local Business AI Receptionist</h3>
+          <p>Answers FAQs, checks hours/services/pricing, captures leads, books appointment requests, and sends a clean summary to the owner.</p>
+          <ul><li>Website chat widget</li><li>WhatsApp + Telegram intake</li><li>Owner summary handoff</li></ul>
+          <a class="agent-link" href="#receptionist-demo">Try live demo →</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="receptionist-demo section-shell" id="receptionist-demo" aria-label="Local Business AI Receptionist demo">
+      <div class="section-heading centered">
+        <span class="mono-label">First working agent</span>
+        <h2>Local Business AI Receptionist</h2>
+        <p>A functional in-browser demo configured for a sample dental studio. It answers customer questions, captures leads, books appointment requests, and drafts the owner summary.</p>
+      </div>
+      <div class="receptionist-layout">
+        <aside class="business-card">
+          <span class="tag green">Demo business</span>
+          <h3>BrightSmile Dental Studio</h3>
+          <p>General dentistry, emergency visits, cleaning, whitening, Invisalign consults, and family appointments.</p>
+          <dl>
+            <div><dt>Hours</dt><dd>Mon–Fri 8 AM–6 PM · Sat 10 AM–2 PM</dd></div>
+            <div><dt>Pricing</dt><dd>Cleaning from $99 · Whitening $199 · Consult free</dd></div>
+            <div><dt>Owner handoff</dt><dd>Instant summary after each qualified lead</dd></div>
+          </dl>
+          <div class="channel-row" aria-label="Supported channels">
+            <span data-channel="website-chat">Website chat</span>
+            <span data-channel="whatsapp">WhatsApp</span>
+            <span data-channel="telegram">Telegram</span>
+          </div>
+        </aside>
+        <div class="chat-demo">
+          <div class="chat-header"><strong>Receptionist</strong><span>Online · responds instantly</span></div>
+          <div class="chat-log" data-chat-log aria-live="polite">
+            <div class="bot bubble">Hi — I’m the AI receptionist for BrightSmile Dental. Ask about hours, services, pricing, or book an appointment.</div>
+          </div>
+          <form class="chat-form" data-chat-form>
+            <input data-chat-input aria-label="Message the AI receptionist" placeholder="Try: Are you open Saturday?" />
+            <button type="submit" class="dark-button">Send</button>
+          </form>
+          <div class="quick-prompts" aria-label="Quick prompts">
+            <button type="button" data-prompt="Are you open on Saturday?">Hours</button>
+            <button type="button" data-prompt="How much is teeth whitening?">Pricing</button>
+            <button type="button" data-prompt="I want to book a cleaning tomorrow morning. My name is Mia Chen, phone 555-0199.">Book</button>
+          </div>
+        </div>
+        <aside class="owner-summary" data-owner-summary>
+          <div class="summary-top"><span class="mono-label">Owner summary</span><button type="button" data-copy-summary>Copy</button></div>
+          <pre data-summary-output>No qualified leads yet. Try the booking prompt to generate a lead summary.</pre>
+        </aside>
       </div>
     </section>
 

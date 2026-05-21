@@ -121,10 +121,39 @@ h1 { margin: 22px 0 0; font-size: clamp(48px, 7vw, 86px); line-height: .94; lett
 .tag.pink { background: var(--pink-bg); color: var(--pink); }
 .tag.red { background: var(--red-bg); color: #d93328; }
 .tag.black { background: #171717; color: #fff; }
+.tag.green { background: #ecfdf3; color: #087443; }
 .price { color: var(--soft); font-size: 13px; font-family: var(--mono); }
 .agent-card h3 { font-size: 26px; letter-spacing: -1px; margin: 0; }
 .agent-card ul { margin: auto 0 0; padding: 0; list-style: none; color: var(--muted); display: grid; gap: 8px; }
 .agent-card li::before { content: '→'; margin-right: 8px; color: var(--ink); }
+.featured-agent { grid-column: 1 / -1; background: linear-gradient(180deg, #fff, #f8fffb); }
+.agent-link { margin-top: 18px; color: #087443; font-weight: 600; }
+
+.receptionist-demo { padding-top: 10px; padding-bottom: 110px; }
+.receptionist-layout { display: grid; grid-template-columns: .82fr 1.1fr .95fr; gap: 14px; align-items: stretch; }
+.business-card, .chat-demo, .owner-summary { background: #fff; border-radius: 16px; padding: 22px; box-shadow: var(--shadow); }
+.business-card h3 { font-size: 28px; margin: 18px 0 0; letter-spacing: -1px; }
+.business-card dl { display: grid; gap: 14px; margin: 22px 0; }
+.business-card dt { font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: var(--soft); margin-bottom: 4px; }
+.business-card dd { margin: 0; color: var(--ink); line-height: 1.45; }
+.channel-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.channel-row span, .quick-prompts button { border: 0; border-radius: 999px; padding: 8px 10px; background: #fafafa; box-shadow: rgba(0,0,0,.08) 0 0 0 1px; color: var(--muted); font: 500 12px var(--sans); }
+.chat-demo { display: flex; flex-direction: column; min-height: 520px; padding: 0; overflow: hidden; }
+.chat-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; box-shadow: rgba(0,0,0,.08) 0 1px 0; }
+.chat-header span { color: #087443; font-size: 13px; }
+.chat-log { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 18px; background: linear-gradient(180deg, #fafafa, #fff); overflow: auto; }
+.bubble { max-width: 82%; padding: 12px 14px; border-radius: 15px; line-height: 1.45; font-size: 14px; }
+.bot.bubble { background: #fff; box-shadow: rgba(0,0,0,.08) 0 0 0 1px; color: var(--ink); align-self: flex-start; }
+.user.bubble { background: #171717; color: #fff; align-self: flex-end; }
+.chat-form { display: flex; gap: 10px; padding: 14px; box-shadow: rgba(0,0,0,.08) 0 -1px 0; }
+.chat-form input { flex: 1; border: 0; outline: 0; border-radius: 10px; padding: 0 14px; min-height: 42px; box-shadow: rgba(0,0,0,.08) 0 0 0 1px; font: inherit; }
+.quick-prompts { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 14px 14px; }
+.quick-prompts button { cursor: pointer; }
+.owner-summary { background: #050505; color: #fff; display: flex; flex-direction: column; }
+.summary-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.summary-top .mono-label { color: #aaa; }
+.summary-top button { border: 0; border-radius: 8px; padding: 8px 10px; background: #fff; color: #171717; font-weight: 600; }
+.owner-summary pre { flex: 1; color: #d7d7d7; line-height: 1.6; white-space: pre-wrap; font-size: 13px; }
 
 .workflow { padding: 100px 0; background: #fafafa; box-shadow: rgba(0,0,0,.08) 0 -1px 0, rgba(0,0,0,.08) 0 1px 0; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -162,8 +191,9 @@ pre { margin: 0; white-space: pre-wrap; line-height: 1.7; color: #e8e8e8; font-f
   .hero { padding-top: 54px; min-height: auto; }
   h1 { letter-spacing: -3px; }
   .hero-panel { transform: none; }
-  .metrics, .steps, .pricing-grid { grid-template-columns: 1fr; }
+  .metrics, .steps, .pricing-grid, .receptionist-layout { grid-template-columns: 1fr; }
   .agent-grid { grid-template-columns: 1fr; }
+  .featured-agent { grid-column: auto; }
   .footer { flex-direction: column; align-items: flex-start; gap: 14px; }
 }
 
