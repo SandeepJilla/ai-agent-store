@@ -60,6 +60,28 @@ const debounce = (fn, delay = 180) => {
   };
 };
 
+async function callAgentAPI(agent, action, payload) {
+  const response = await fetch('/api/agent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agent, action, payload })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.error) throw new Error(data.error || `Agent API failed with HTTP ${response.status}`);
+  return data.result;
+}
+
+function formatLLMResult(result) {
+  if (!result) return 'No result returned.';
+  const lines = [];
+  if (result.answer) lines.push(result.answer);
+  if (result.summary && result.summary !== result.answer) lines.push(`Summary: ${result.summary}`);
+  if (result.artifact && Object.keys(result.artifact).length) lines.push(`Artifact:\n${JSON.stringify(result.artifact, null, 2)}`);
+  if (Array.isArray(result.nextSteps) && result.nextSteps.length) lines.push(`Next steps:\n- ${result.nextSteps.join('\n- ')}`);
+  if (result.disclaimer) lines.push(`Note: ${result.disclaimer}`);
+  return lines.join('\n\n') || JSON.stringify(result, null, 2);
+}
+
 
 function extractName(message) {
   const match = message.match(/(?:my name is|i am|i'm)\s+([a-z][a-z\s.'-]{1,40})(?:,|\.|\sphone|\s\d|$)/i);
@@ -206,27 +228,37 @@ let latestResearchRun = null;
 document.querySelector('[data-run-research]')?.addEventListener('click', async () => {
   const topic = document.querySelector('[data-research-topic]')?.value || '';
   const status = document.querySelector('[data-research-status]');
-  const steps = ['Searching credible sources', 'Summarizing evidence', 'Drafting report', 'Attaching citations'];
+  const steps = ['Calling OpenAI', 'Planning source search', 'Drafting report', 'Preparing citations'];
   const container = document.querySelector('[data-research-live-steps]');
-  for (let index = 0; index < steps.length; index += 1) {
-    renderLiveSteps(container, steps, index);
-    if (status) status.textContent = `Running LangGraph step ${index + 1}/${steps.length}: ${steps[index]}…`;
-    await new Promise((resolve) => window.setTimeout(resolve, 120));
+  try {
+    for (let index = 0; index < steps.length; index += 1) {
+      renderLiveSteps(container, steps, index);
+      if (status) status.textContent = `Production OpenAI run ${index + 1}/${steps.length}: ${steps[index]}…`;
+      await new Promise((resolve) => window.setTimeout(resolve, 120));
+    }
+    const result = await callAgentAPI('research', 'run', { topic });
+    latestResearchRun = result;
+    const preview = document.querySelector('[data-report-preview]');
+    if (preview) preview.innerHTML = `<span class="mono-label">OpenAI report output</span><h3>${escapeHTML(result.artifact?.title || `Research Report: ${topic}`)}</h3><pre>${escapeHTML(formatLLMResult(result))}</pre>`;
+    if (status) status.textContent = `OpenAI research workflow complete using production API.`;
+  } catch (error) {
+    if (status) status.textContent = `OpenAI API error: ${error.message}`;
   }
-  latestResearchRun = runResearch(topic);
-  renderResearch(latestResearchRun);
-  if (status) status.textContent = `LangGraph run complete: ${latestResearchRun.sources.length} sources summarized, ${latestResearchRun.report.sections.length} sections drafted, citations attached.`;
 });
 
 document.querySelector('[data-research-topic]')?.addEventListener('input', debounce((event) => previewResearch(event.target.value), 120));
 if (document.querySelector('[data-research-topic]')) previewResearch(document.querySelector('[data-research-topic]').value);
 
 document.querySelectorAll('[data-export]').forEach((button) => {
-  button.addEventListener('click', () => {
-    latestResearchRun ||= runResearch(document.querySelector('[data-research-topic]')?.value || '');
-    const result = exportReport(latestResearchRun, button.dataset.export);
+  button.addEventListener('click', async () => {
     const status = document.querySelector('[data-research-status]');
-    if (status) status.textContent = `${result.message} File: ${result.fileName}`;
+    try {
+      const topic = document.querySelector('[data-research-topic]')?.value || '';
+      const result = await callAgentAPI('research', `export-${button.dataset.export}`, { topic, latestResearchRun });
+      if (status) status.textContent = `OpenAI ${button.dataset.export.toUpperCase()} export plan ready: ${result.artifact?.fileName || 'report.' + button.dataset.export}`;
+    } catch (error) {
+      if (status) status.textContent = `OpenAI API error: ${error.message}`;
+    }
   });
 });
 
@@ -296,8 +328,20 @@ function renderSupportWorkflow(message) {
   return run;
 }
 
-document.querySelector('[data-run-support]')?.addEventListener('click', () => {
-  renderSupportWorkflow(document.querySelector('[data-support-question]')?.value || '');
+document.querySelector('[data-run-support]')?.addEventListener('click', async () => {
+  const message = document.querySelector('[data-support-question]')?.value || '';
+  const answerOutput = document.querySelector('[data-support-answer]');
+  const ticketOutput = document.querySelector('[data-ticket-output]');
+  const summaryOutput = document.querySelector('[data-issue-summary]');
+  if (answerOutput) answerOutput.textContent = 'Calling OpenAI support agent…';
+  try {
+    const result = await callAgentAPI('support', 'answer-and-ticket', { message });
+    if (answerOutput) answerOutput.textContent = result.answer || formatLLMResult(result);
+    if (ticketOutput) ticketOutput.textContent = JSON.stringify(result.artifact || {}, null, 2);
+    if (summaryOutput) summaryOutput.textContent = result.summary || formatLLMResult(result);
+  } catch (error) {
+    if (answerOutput) answerOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
 });
 
 document.querySelector('[data-support-question]')?.addEventListener('input', debounce((event) => {
@@ -307,10 +351,10 @@ document.querySelector('[data-support-question]')?.addEventListener('input', deb
 }, 120));
 
 document.querySelectorAll('[data-support-prompt]').forEach((button) => {
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const input = document.querySelector('[data-support-question]');
     if (input) input.value = button.dataset.supportPrompt;
-    renderSupportWorkflow(button.dataset.supportPrompt);
+    document.querySelector('[data-run-support]')?.click();
   });
 });
 
@@ -351,8 +395,28 @@ function renderDocumentQA(question) {
   return { answer, compare };
 }
 
-document.querySelector('[data-run-doc]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
-document.querySelector('[data-compare-docs]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
+document.querySelector('[data-run-doc]')?.addEventListener('click', async () => {
+  const question = document.querySelector('[data-doc-question]')?.value || '';
+  const answerOutput = document.querySelector('[data-doc-answer]');
+  if (answerOutput) answerOutput.textContent = 'Calling OpenAI document agent…';
+  try {
+    const result = await callAgentAPI('document', 'ask', { question });
+    if (answerOutput) answerOutput.textContent = formatLLMResult(result);
+  } catch (error) {
+    if (answerOutput) answerOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
+document.querySelector('[data-compare-docs]')?.addEventListener('click', async () => {
+  const question = document.querySelector('[data-doc-question]')?.value || '';
+  const compareOutput = document.querySelector('[data-doc-compare]');
+  if (compareOutput) compareOutput.textContent = 'Calling OpenAI document comparison agent…';
+  try {
+    const result = await callAgentAPI('document', 'compare', { question });
+    if (compareOutput) compareOutput.textContent = formatLLMResult(result);
+  } catch (error) {
+    if (compareOutput) compareOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
 document.querySelector('[data-doc-question]')?.addEventListener('input', debounce((event) => renderDocumentQA(event.target.value), 120));
 if (document.querySelector('[data-doc-question]')) renderDocumentQA(document.querySelector('[data-doc-question]').value);
 
@@ -414,8 +478,28 @@ function renderEmailAssistant() {
   return { digest, reply, emails };
 }
 
-document.querySelector('[data-run-email]')?.addEventListener('click', renderEmailAssistant);
-document.querySelector('[data-draft-email]')?.addEventListener('click', renderEmailAssistant);
+document.querySelector('[data-run-email]')?.addEventListener('click', async () => {
+  const inboxText = document.querySelector('[data-email-inbox]')?.value || '';
+  const summaryOutput = document.querySelector('[data-email-summary]');
+  if (summaryOutput) summaryOutput.textContent = 'Calling OpenAI email assistant…';
+  try {
+    const result = await callAgentAPI('email', 'summarize', { inboxText });
+    if (summaryOutput) summaryOutput.textContent = formatLLMResult(result);
+  } catch (error) {
+    if (summaryOutput) summaryOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
+document.querySelector('[data-draft-email]')?.addEventListener('click', async () => {
+  const inboxText = document.querySelector('[data-email-inbox]')?.value || '';
+  const replyOutput = document.querySelector('[data-email-reply]');
+  if (replyOutput) replyOutput.textContent = 'Calling OpenAI reply drafter…';
+  try {
+    const result = await callAgentAPI('email', 'draft-reply', { inboxText });
+    if (replyOutput) replyOutput.textContent = formatLLMResult(result);
+  } catch (error) {
+    if (replyOutput) replyOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
 document.querySelector('[data-email-inbox]')?.addEventListener('input', debounce(renderEmailAssistant, 120));
 if (document.querySelector('[data-email-inbox]')) renderEmailAssistant();
 
@@ -467,8 +551,30 @@ function previewScheduling() {
   if (reminderOutput) reminderOutput.textContent = `Reminder preview via ${parsed.channel}: ${parsed.service} for ${parsed.name} at ${availability.slot}.`;
 }
 
-document.querySelector('[data-run-scheduling]')?.addEventListener('click', () => renderScheduling(false));
-document.querySelector('[data-reschedule]')?.addEventListener('click', () => renderScheduling(true));
+document.querySelector('[data-run-scheduling]')?.addEventListener('click', async () => {
+  const request = document.querySelector('[data-schedule-request]')?.value || '';
+  const bookingOutput = document.querySelector('[data-scheduling-booking]');
+  const reminderOutput = document.querySelector('[data-scheduling-reminder]');
+  if (bookingOutput) bookingOutput.textContent = 'Calling OpenAI scheduling agent…';
+  try {
+    const result = await callAgentAPI('scheduling', 'book', { request });
+    if (bookingOutput) bookingOutput.textContent = JSON.stringify(result.artifact || result, null, 2);
+    if (reminderOutput) reminderOutput.textContent = result.summary || formatLLMResult(result);
+  } catch (error) {
+    if (bookingOutput) bookingOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
+document.querySelector('[data-reschedule]')?.addEventListener('click', async () => {
+  const request = document.querySelector('[data-schedule-request]')?.value || '';
+  const reminderOutput = document.querySelector('[data-scheduling-reminder]');
+  if (reminderOutput) reminderOutput.textContent = 'Calling OpenAI rescheduling agent…';
+  try {
+    const result = await callAgentAPI('scheduling', 'reschedule', { request, newTime: 'Wednesday morning' });
+    if (reminderOutput) reminderOutput.textContent = formatLLMResult(result);
+  } catch (error) {
+    if (reminderOutput) reminderOutput.textContent = `OpenAI API error: ${error.message}`;
+  }
+});
 document.querySelector('[data-schedule-request]')?.addEventListener('input', debounce(previewScheduling, 120));
 if (document.querySelector('[data-schedule-request]')) previewScheduling();
 
@@ -485,13 +591,20 @@ function updateSummary() {
   if (output) output.textContent = ownerSummary();
 }
 
-function sendChatMessage(message) {
+async function sendChatMessage(message) {
   const log = document.querySelector('[data-chat-log]');
   if (!log || !message.trim()) return;
   appendBubble(log, message, 'user');
-  const response = answer(message);
-  appendBubble(log, response.text, 'bot');
-  updateSummary();
+  appendBubble(log, 'Calling OpenAI receptionist…', 'bot');
+  const pending = log.lastElementChild;
+  try {
+    const result = await callAgentAPI('receptionist', 'chat', { message, businessProfile });
+    pending.textContent = result.answer || formatLLMResult(result);
+    const output = document.querySelector('[data-summary-output]');
+    if (output) output.textContent = result.summary || JSON.stringify(result.artifact || {}, null, 2) || 'No owner handoff returned.';
+  } catch (error) {
+    pending.textContent = `OpenAI API error: ${error.message}`;
+  }
 }
 
 const chatForm = document.querySelector('[data-chat-form]');

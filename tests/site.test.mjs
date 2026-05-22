@@ -31,6 +31,8 @@ assert(document.querySelector('[data-agent="document-qa-compliance-agent"]'), 'D
 assert(document.querySelector('[data-agent="email-assistant-agent"]'), 'Email Assistant listing missing');
 assert(document.querySelector('[data-agent="appointment-booking-scheduling-agent"]'), 'Appointment Booking listing missing');
 assert(html.includes('app.js'), 'browser app code should be linked');
+assert(app.includes("fetch('/api/agent'"), 'browser app should call Cloudflare OpenAI agent API');
+assert(readFileSync(new URL('../functions/api/agent.js', import.meta.url), 'utf8').includes('OPENAI_API_KEY'), 'Cloudflare Pages Function should use OPENAI_API_KEY');
 assert(readFileSync(new URL('../agents/README.md', import.meta.url), 'utf8').includes('actual runnable JavaScript code'), 'agents source directory README missing');
 assert(document.querySelector('#receptionist-demo'), 'interactive receptionist demo missing');
 assert(document.querySelector('[data-channel="website-chat"]'), 'website chat channel missing');

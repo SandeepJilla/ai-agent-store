@@ -1,6 +1,6 @@
 # AgentMart — AI Agent Store
 
-A premium static storefront for sellable AI agent demos. The live site shows six realtime, in-browser product demos and this repository now includes the standalone source code for each agent workflow.
+A premium static storefront for sellable AI agent demos. The live site shows six realtime product demos backed by a Cloudflare Pages Function that calls OpenAI server-side. This repository also includes the standalone source code for each agent workflow.
 
 **Live site:** https://ai-agent-store-285.pages.dev
 
@@ -10,6 +10,7 @@ A premium static storefront for sellable AI agent demos. The live site shows six
 index.html                  # Storefront markup
 styles.css                  # Apple-inspired visual design
 app.js                      # Browser wiring for the realtime demos
+functions/api/agent.js       # Cloudflare Pages Function: browser-safe OpenAI API proxy
 agents/                     # Actual standalone source code for each demo agent
   local-business-receptionist/agent.mjs
   research-report-agent/agent.mjs
