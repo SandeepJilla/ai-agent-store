@@ -34,6 +34,9 @@ assert(document.querySelector('link[href="styles.css"]'), 'stylesheet link missi
 assert(document.querySelector('script[src="app.js"]'), 'script link missing');
 assert(css.includes('@media (max-width: 920px)'), 'responsive breakpoint missing');
 assert(css.includes('prefers-reduced-motion'), 'reduced motion handling missing');
+assert(css.includes('backdrop-filter: saturate(180%) blur(20px)'), 'Apple-style glass nav missing');
+assert(css.includes('#0071e3'), 'Apple blue accent missing');
+assert(css.includes('.product-orb'), 'cinematic product orb treatment missing');
 assert(css.includes('.receptionist-demo'), 'receptionist CSS missing');
 assert(document.querySelector('#research-demo'), 'interactive research agent demo missing');
 assert(document.querySelector('[data-stack="langgraph"]'), 'LangGraph stack badge missing');
