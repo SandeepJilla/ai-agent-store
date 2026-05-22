@@ -1,5 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
+import receptionistModule from '../agents/local-business-receptionist/agent.mjs';
+import researchModule from '../agents/research-report-agent/agent.mjs';
+import supportModule from '../agents/customer-support-agent/agent.mjs';
+import documentModule from '../agents/document-qa-compliance-agent/agent.mjs';
+import emailModule from '../agents/email-assistant-agent/agent.mjs';
+import schedulingModule from '../agents/appointment-scheduling-agent/agent.mjs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
@@ -24,6 +30,8 @@ assert(document.querySelector('[data-agent="small-business-customer-support-agen
 assert(document.querySelector('[data-agent="document-qa-compliance-agent"]'), 'Document Q&A / compliance listing missing');
 assert(document.querySelector('[data-agent="email-assistant-agent"]'), 'Email Assistant listing missing');
 assert(document.querySelector('[data-agent="appointment-booking-scheduling-agent"]'), 'Appointment Booking listing missing');
+assert(html.includes('app.js'), 'browser app code should be linked');
+assert(readFileSync(new URL('../agents/README.md', import.meta.url), 'utf8').includes('actual runnable JavaScript code'), 'agents source directory README missing');
 assert(document.querySelector('#receptionist-demo'), 'interactive receptionist demo missing');
 assert(document.querySelector('[data-channel="website-chat"]'), 'website chat channel missing');
 assert(document.querySelector('[data-channel="whatsapp"]'), 'WhatsApp channel missing');
@@ -154,5 +162,18 @@ assert(booking.confirmed && /Saturday morning/i.test(booking.summary), 'booking 
 
 const ownerSummary = receptionist.ownerSummary();
 assert(/Ava Patel/i.test(ownerSummary) && /teeth whitening/i.test(ownerSummary) && /WhatsApp/i.test(ownerSummary), 'owner summary should include captured lead and booking details');
+
+const moduleReception = receptionistModule.answer('I want to book teeth whitening tomorrow morning. My name is Lina Park, phone 555-1212.');
+assert(moduleReception.intent === 'booking' && receptionistModule.ownerSummary().includes('Lina Park'), 'standalone receptionist agent module should run booking logic');
+const moduleResearchRun = researchModule.runResearch('AI for real estate');
+assert(moduleResearchRun.stack === 'LangGraph' && moduleResearchRun.citations.length >= 3, 'standalone research agent module should generate cited runs');
+const moduleSupportRun = supportModule.runSupportWorkflow('I was charged twice. My name is Nora Lee, email nora@example.com.');
+assert(moduleSupportRun.ticket.priority === 'high', 'standalone support agent module should create escalated tickets');
+const moduleDocAnswer = documentModule.askQuestion('Can volunteers access patient records?');
+assert(moduleDocAnswer.citations.length >= 2, 'standalone document QA module should return citations');
+const moduleEmailDigest = emailModule.summarizeUnread('stripe@example.com | Invoice | finance | Amount $42 due tomorrow');
+assert(moduleEmailDigest.extracted.some((item) => item.amount === '$42'), 'standalone email agent module should extract invoice amounts');
+const moduleScheduling = schedulingModule.bookAppointment(schedulingModule.parseSchedulingRequest('Book salon appointment for Maya Rao on Wednesday via SMS'));
+assert(moduleScheduling.name === 'Maya Rao' && moduleScheduling.slot.includes('Wednesday'), 'standalone scheduling agent module should parse and book appointments');
 
 console.log('AgentMart agent checks passed');
