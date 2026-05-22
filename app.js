@@ -51,6 +51,15 @@ const businessProfile = {
 const receptionistState = { leads: [], bookings: [] };
 
 const normalize = (text = '') => text.toLowerCase();
+const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const debounce = (fn, delay = 180) => {
+  let timer;
+  return (...args) => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => fn(...args), delay);
+  };
+};
+
 
 function extractName(message) {
   const match = message.match(/(?:my name is|i am|i'm)\s+([a-z][a-z\s.'-]{1,40})(?:,|\.|\sphone|\s\d|$)/i);
@@ -171,22 +180,46 @@ function renderResearch(run) {
   if (!preview || !run) return;
   preview.innerHTML = `
     <span class="mono-label">Report preview</span>
-    <h3>${run.report.title}</h3>
-    <p>${run.summary}</p>
-    <ul>${run.report.sections.map((section) => `<li><b>${section.heading}:</b> ${section.body}</li>`).join('')}</ul>
-    <cite>Citations: ${run.citations.map((citation) => `[${citation.id}] ${citation.title}`).join(' · ')}</cite>
+    <h3>${escapeHTML(run.report.title)}</h3>
+    <p>${escapeHTML(run.summary)}</p>
+    <ul>${run.report.sections.map((section) => `<li><b>${escapeHTML(section.heading)}:</b> ${escapeHTML(section.body)}</li>`).join('')}</ul>
+    <cite>Citations: ${run.citations.map((citation) => `[${citation.id}] ${escapeHTML(citation.title)}`).join(' · ')}</cite>
   `;
+}
+
+function renderLiveSteps(container, steps, activeIndex = steps.length - 1) {
+  if (!container) return;
+  container.innerHTML = steps.map((step, index) => `<span class="live-step ${index <= activeIndex ? 'done' : ''}">${escapeHTML(step)}</span>`).join('');
+}
+
+function previewResearch(topic = '') {
+  latestResearchRun = runResearch(topic);
+  renderResearch(latestResearchRun);
+  const status = document.querySelector('[data-research-status]');
+  if (status) status.textContent = `Live preview: ${latestResearchRun.audience} report · ${latestResearchRun.sources.length} sources · ${latestResearchRun.report.sections.length} sections.`;
+  renderLiveSteps(document.querySelector('[data-research-live-steps]'), ['Search queued', 'Sources found', 'Report drafted', 'Citations ready'], 0);
+  return latestResearchRun;
 }
 
 let latestResearchRun = null;
 
-document.querySelector('[data-run-research]')?.addEventListener('click', () => {
+document.querySelector('[data-run-research]')?.addEventListener('click', async () => {
   const topic = document.querySelector('[data-research-topic]')?.value || '';
+  const status = document.querySelector('[data-research-status]');
+  const steps = ['Searching credible sources', 'Summarizing evidence', 'Drafting report', 'Attaching citations'];
+  const container = document.querySelector('[data-research-live-steps]');
+  for (let index = 0; index < steps.length; index += 1) {
+    renderLiveSteps(container, steps, index);
+    if (status) status.textContent = `Running LangGraph step ${index + 1}/${steps.length}: ${steps[index]}…`;
+    await new Promise((resolve) => window.setTimeout(resolve, 120));
+  }
   latestResearchRun = runResearch(topic);
   renderResearch(latestResearchRun);
-  const status = document.querySelector('[data-research-status]');
   if (status) status.textContent = `LangGraph run complete: ${latestResearchRun.sources.length} sources summarized, ${latestResearchRun.report.sections.length} sections drafted, citations attached.`;
 });
+
+document.querySelector('[data-research-topic]')?.addEventListener('input', debounce((event) => previewResearch(event.target.value), 120));
+if (document.querySelector('[data-research-topic]')) previewResearch(document.querySelector('[data-research-topic]').value);
 
 document.querySelectorAll('[data-export]').forEach((button) => {
   button.addEventListener('click', () => {
@@ -267,6 +300,12 @@ document.querySelector('[data-run-support]')?.addEventListener('click', () => {
   renderSupportWorkflow(document.querySelector('[data-support-question]')?.value || '');
 });
 
+document.querySelector('[data-support-question]')?.addEventListener('input', debounce((event) => {
+  const preview = answerFromDocs(event.target.value);
+  const answerOutput = document.querySelector('[data-support-answer]');
+  if (answerOutput) answerOutput.textContent = `${preview.answer} ${preview.escalate ? 'Ticket will be created on submit.' : 'No escalation needed yet.'}`;
+}, 120));
+
 document.querySelectorAll('[data-support-prompt]').forEach((button) => {
   button.addEventListener('click', () => {
     const input = document.querySelector('[data-support-question]');
@@ -314,6 +353,8 @@ function renderDocumentQA(question) {
 
 document.querySelector('[data-run-doc]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
 document.querySelector('[data-compare-docs]')?.addEventListener('click', () => renderDocumentQA(document.querySelector('[data-doc-question]')?.value || ''));
+document.querySelector('[data-doc-question]')?.addEventListener('input', debounce((event) => renderDocumentQA(event.target.value), 120));
+if (document.querySelector('[data-doc-question]')) renderDocumentQA(document.querySelector('[data-doc-question]').value);
 
 const sampleEmails = [
   { from: 'client@acme.co', subject: 'Proposal follow up', category: 'urgent', body: 'Can you send updated pricing by Friday?' },
@@ -321,39 +362,77 @@ const sampleEmails = [
   { from: 'events@local.org', subject: 'Receipt for registration', category: 'finance', body: 'Receipt total $129.' }
 ];
 
-function summarizeUnread() {
+function parseInbox(raw = '') {
+  if (!raw.trim()) return sampleEmails;
+  return raw.split('\n').map((line) => {
+    const [from = 'unknown@example.com', subject = 'No subject', category = 'normal', ...bodyParts] = line.split('|').map((part) => part.trim());
+    const body = bodyParts.join(' | ') || line;
+    const inferredCategory = /invoice|receipt|paid|due|\$\d+/i.test(`${subject} ${body}`) ? 'finance' : /urgent|asap|friday|today|client/i.test(`${subject} ${body}`) ? 'urgent' : category || 'normal';
+    return { from, subject, category: category === 'normal' ? inferredCategory : category, body };
+  }).filter((email) => email.subject);
+}
+
+function extractMoney(text = '') {
+  return text.match(/\$[0-9][0-9,]*(?:\.\d{2})?/)?.[0];
+}
+
+function summarizeUnread(inbox = sampleEmails) {
+  const emails = Array.isArray(inbox) ? inbox : parseInbox(inbox);
+  const important = emails.filter((email) => ['urgent', 'finance'].includes(email.category) || /urgent|invoice|receipt|due|pricing/i.test(`${email.subject} ${email.body}`));
+  const extracted = emails.flatMap((email) => {
+    const amount = extractMoney(`${email.subject} ${email.body}`);
+    if (!amount && !/invoice|receipt/i.test(`${email.subject} ${email.body}`)) return [];
+    return [{ type: /receipt/i.test(`${email.subject} ${email.body}`) ? 'receipt' : 'invoice', vendor: email.from.split('@')[0] || 'Vendor', amount: amount || 'amount not found', due: /next week/i.test(email.body) ? 'next week' : 'not specified' }];
+  });
   return {
-    total: sampleEmails.length,
-    important: sampleEmails.filter((email) => ['urgent', 'finance'].includes(email.category)),
-    extracted: [{ type: 'invoice', vendor: 'Vendor', amount: '$842', due: 'next week' }, { type: 'receipt', vendor: 'Local Org', amount: '$129' }],
-    summary: '3 unread emails: 1 urgent client follow-up, 1 invoice, and 1 receipt. Recommended action: reply to client and save finance attachments.'
+    total: emails.length,
+    important,
+    extracted,
+    summary: `${emails.length} unread emails: ${important.filter((email) => email.category === 'urgent').length} urgent, ${important.filter((email) => email.category === 'finance').length} finance, ${Math.max(0, emails.length - important.length)} normal. Recommended action: reply to urgent clients, save finance records, and set reminders.`
   };
 }
 
 function draftReply(context = 'client follow up') {
-  return { body: `Thanks for the note — I’ll send the updated pricing and next steps today. Appreciate the follow-up.`, reminder: `Create follow up reminder for ${context} tomorrow at 9 AM.` };
+  const cleanContext = String(context || 'client follow up').slice(0, 90);
+  return { body: `Thanks for the note — I’ll send the updated pricing and next steps today. Appreciate the follow-up.`, reminder: `Create follow up reminder for ${cleanContext} tomorrow at 9 AM.` };
 }
 
-function categorizeEmails() {
-  return sampleEmails.reduce((counts, email) => ({ ...counts, [email.category]: (counts[email.category] || 0) + 1 }), { urgent: 0, finance: 0, normal: 0 });
+function categorizeEmails(inbox = sampleEmails) {
+  return (Array.isArray(inbox) ? inbox : parseInbox(inbox)).reduce((counts, email) => ({ ...counts, [email.category]: (counts[email.category] || 0) + 1 }), { urgent: 0, finance: 0, normal: 0 });
 }
 
 function renderEmailAssistant() {
-  const digest = summarizeUnread();
-  const reply = draftReply('client follow up');
+  const inboxText = document.querySelector('[data-email-inbox]')?.value || '';
+  const emails = parseInbox(inboxText);
+  const digest = summarizeUnread(emails);
+  const firstUrgent = digest.important.find((email) => email.category === 'urgent') || emails[0];
+  const reply = draftReply(firstUrgent?.subject || 'client follow up');
   const summaryOutput = document.querySelector('[data-email-summary]');
   const replyOutput = document.querySelector('[data-email-reply]');
-  if (summaryOutput) summaryOutput.textContent = `${digest.summary}\n\nImportant:\n${digest.important.map((e) => `- ${e.subject} (${e.category})`).join('\n')}\n\nExtracted: ${digest.extracted.map((x) => `${x.type} ${x.amount}`).join(', ')}`;
+  if (summaryOutput) summaryOutput.textContent = `${digest.summary}\n\nImportant:\n${digest.important.map((e) => `- ${e.subject} (${e.category}) from ${e.from}`).join('\n') || '- None'}\n\nExtracted: ${digest.extracted.map((x) => `${x.type} ${x.amount}`).join(', ') || 'none'}`;
   if (replyOutput) replyOutput.textContent = `${reply.body}\n\nReminder: ${reply.reminder}`;
-  return { digest, reply };
+  return { digest, reply, emails };
 }
 
 document.querySelector('[data-run-email]')?.addEventListener('click', renderEmailAssistant);
 document.querySelector('[data-draft-email]')?.addEventListener('click', renderEmailAssistant);
+document.querySelector('[data-email-inbox]')?.addEventListener('input', debounce(renderEmailAssistant, 120));
+if (document.querySelector('[data-email-inbox]')) renderEmailAssistant();
 
 const schedulingState = { appointments: [] };
+function parseSchedulingRequest(request = '') {
+  const text = String(request || '');
+  const nameMatch = text.match(/(?:for|name is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+  const channel = /whatsapp/i.test(text) ? 'WhatsApp' : /sms|text/i.test(text) ? 'SMS' : /email/i.test(text) ? 'Email' : 'phone';
+  const preferredTime = /wednesday/i.test(text) ? 'Wednesday morning' : /tuesday/i.test(text) ? 'Tuesday afternoon' : /tomorrow/i.test(text) ? 'tomorrow morning' : 'next available opening';
+  const service = /hvac/i.test(text) ? 'HVAC repair' : /hair|salon/i.test(text) ? 'salon appointment' : /consult/i.test(text) ? 'consultation' : /cleaning/i.test(text) ? 'cleaning' : 'appointment';
+  return { name: nameMatch?.[1] || 'Customer', service, preferredTime, channel };
+}
 function checkAvailability(preferredTime = 'Tuesday afternoon') {
-  return { available: true, slot: preferredTime.includes('Wednesday') ? 'Wednesday 10:00 AM' : 'Tuesday 2:30 PM', calendar: 'Google Calendar' };
+  const text = normalize(preferredTime);
+  if (text.includes('wednesday')) return { available: true, slot: 'Wednesday 10:00 AM', calendar: 'Google Calendar' };
+  if (text.includes('tomorrow')) return { available: true, slot: 'Tomorrow 9:30 AM', calendar: 'Google Calendar' };
+  return { available: true, slot: 'Tuesday 2:30 PM', calendar: 'Google Calendar' };
 }
 function bookSchedulingAppointment({ name, service, preferredTime, channel }) {
   const availability = checkAvailability(preferredTime);
@@ -369,16 +448,29 @@ function rescheduleAppointment(id, preferredTime = 'Wednesday morning') {
   return appointment;
 }
 function renderScheduling(reschedule = false) {
-  const appointment = reschedule ? rescheduleAppointment(null, 'Wednesday morning') : bookSchedulingAppointment({ name: 'Ravi Shah', service: 'HVAC repair', preferredTime: 'Tuesday afternoon', channel: 'WhatsApp' });
+  const request = document.querySelector('[data-schedule-request]')?.value || 'Book HVAC repair for Ravi Shah on Tuesday afternoon via WhatsApp.';
+  const parsed = parseSchedulingRequest(request);
+  const appointment = reschedule ? rescheduleAppointment(null, 'Wednesday morning') : bookSchedulingAppointment(parsed);
   const bookingOutput = document.querySelector('[data-scheduling-booking]');
   const reminderOutput = document.querySelector('[data-scheduling-reminder]');
-  if (bookingOutput) bookingOutput.textContent = `${appointment.id}\n${appointment.name} · ${appointment.service}\nSlot: ${appointment.slot}\nConfirmed: ${appointment.confirmed}`;
+  if (bookingOutput) bookingOutput.textContent = `${appointment.id}\n${appointment.name} · ${appointment.service}\nSlot: ${appointment.slot}\nConfirmed: ${appointment.confirmed}\nCalendar: Google Calendar`;
   if (reminderOutput) reminderOutput.textContent = appointment.reminder;
   return appointment;
+}
+function previewScheduling() {
+  const request = document.querySelector('[data-schedule-request]')?.value || '';
+  const parsed = parseSchedulingRequest(request);
+  const availability = checkAvailability(parsed.preferredTime);
+  const bookingOutput = document.querySelector('[data-scheduling-booking]');
+  if (bookingOutput) bookingOutput.textContent = `Parsed request\n${parsed.name} · ${parsed.service}\nAvailable slot: ${availability.slot}\nChannel: ${parsed.channel}`;
+  const reminderOutput = document.querySelector('[data-scheduling-reminder]');
+  if (reminderOutput) reminderOutput.textContent = `Reminder preview via ${parsed.channel}: ${parsed.service} for ${parsed.name} at ${availability.slot}.`;
 }
 
 document.querySelector('[data-run-scheduling]')?.addEventListener('click', () => renderScheduling(false));
 document.querySelector('[data-reschedule]')?.addEventListener('click', () => renderScheduling(true));
+document.querySelector('[data-schedule-request]')?.addEventListener('input', debounce(previewScheduling, 120));
+if (document.querySelector('[data-schedule-request]')) previewScheduling();
 
 function appendBubble(log, text, sender) {
   const bubble = document.createElement('div');
@@ -420,8 +512,8 @@ document.querySelector('[data-copy-summary]')?.addEventListener('click', async (
 });
 
 window.AgentMartReceptionist = { answer, captureLead, bookAppointment, ownerSummary, state: receptionistState };
-window.AgentMartResearchAgent = { runResearch, exportReport, renderResearch };
+window.AgentMartResearchAgent = { runResearch, exportReport, renderResearch, previewResearch };
 window.AgentMartSupportAgent = { answerFromDocs, createTicket, summarizeIssue, runSupportWorkflow, renderSupportWorkflow, state: supportState };
 window.AgentMartDocumentQAAgent = { askQuestion, generateSummary, compareDocuments, renderDocumentQA };
-window.AgentMartEmailAssistantAgent = { summarizeUnread, draftReply, categorizeEmails, renderEmailAssistant };
-window.AgentMartSchedulingAgent = { checkAvailability, bookAppointment: bookSchedulingAppointment, rescheduleAppointment, renderScheduling, state: schedulingState };
+window.AgentMartEmailAssistantAgent = { parseInbox, summarizeUnread, draftReply, categorizeEmails, renderEmailAssistant };
+window.AgentMartSchedulingAgent = { parseSchedulingRequest, checkAvailability, bookAppointment: bookSchedulingAppointment, rescheduleAppointment, renderScheduling, previewScheduling, state: schedulingState };

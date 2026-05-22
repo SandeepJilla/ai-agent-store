@@ -46,7 +46,9 @@ assert(document.querySelector('[data-research-step="report"]'), 'research report
 assert(document.querySelector('[data-research-step="citations"]'), 'research citations step missing');
 assert(document.querySelector('[data-export="pdf"]'), 'PDF export button missing');
 assert(document.querySelector('[data-export="word"]'), 'Word export button missing');
+assert(document.querySelector('[data-research-live-steps]'), 'research realtime progress steps missing');
 assert(css.includes('.research-demo'), 'research CSS missing');
+assert(css.includes('.live-step.done'), 'realtime progress styling missing');
 assert(document.querySelector('#support-demo'), 'interactive customer support agent demo missing');
 assert(document.querySelector('[data-base="openai-cs-agents-demo"]'), 'OpenAI customer service agents demo base badge missing');
 assert(document.querySelector('[data-backend="fastapi"]'), 'FastAPI backend badge missing');
@@ -65,6 +67,7 @@ assert(document.querySelector('[data-doc-output="compare"]'), 'document comparis
 assert(css.includes('.document-demo'), 'document CSS missing');
 assert(document.querySelector('#email-demo'), 'Email assistant demo missing');
 assert(document.querySelector('[data-email-stack="openai-agents-gmail-fastapi"]'), 'email stack badge missing');
+assert(document.querySelector('[data-email-inbox]'), 'email realtime inbox editor missing');
 assert(document.querySelector('[data-email-output="summary"]'), 'email summary output missing');
 assert(document.querySelector('[data-email-output="reply"]'), 'email reply output missing');
 assert(css.includes('.email-demo'), 'email CSS missing');
@@ -96,9 +99,14 @@ const emailReply = email.draftReply('client follow up');
 assert(/Thanks/i.test(emailReply.body) && emailReply.reminder.includes('follow up'), 'email assistant should draft replies and reminders');
 const emailCategories = email.categorizeEmails();
 assert(emailCategories.urgent >= 1 && emailCategories.finance >= 1, 'email assistant should categorize important emails');
+const customInbox = email.parseInbox('founder@example.com | Urgent proposal | normal | Please send quote today\nstripe@example.com | Invoice paid | finance | Receipt total $58');
+const customDigest = email.summarizeUnread(customInbox);
+assert(customDigest.total === 2 && customDigest.extracted.some((item) => item.amount === '$58'), 'email assistant should process user-edited realtime inbox text');
 
 const slot = scheduling.checkAvailability('Tuesday afternoon');
 assert(slot.available === true && /Tuesday/i.test(slot.slot), 'scheduling agent should check calendar availability');
+const parsedSchedule = scheduling.parseSchedulingRequest('Book salon appointment for Maya Rao on Wednesday via SMS');
+assert(parsedSchedule.name === 'Maya Rao' && parsedSchedule.service === 'salon appointment' && parsedSchedule.channel === 'SMS', 'scheduling agent should parse user-edited requests');
 const scheduled = scheduling.bookAppointment({ name: 'Ravi Shah', service: 'HVAC repair', preferredTime: 'Tuesday afternoon', channel: 'WhatsApp' });
 assert(scheduled.confirmed && scheduled.reminder.includes('WhatsApp'), 'scheduling agent should book and send reminders');
 const rescheduled = scheduling.rescheduleAppointment(scheduled.id, 'Wednesday morning');

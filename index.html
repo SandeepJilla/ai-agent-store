@@ -188,14 +188,15 @@
           </ol>
         </aside>
         <div class="research-console">
-          <label for="research-topic">Research topic</label>
+          <label for="research-topic">Research topic — edit it and watch the report update</label>
           <textarea id="research-topic" data-research-topic>AI tools for small nonprofit fundraising</textarea>
-          <button class="dark-button" type="button" data-run-research>Run research workflow</button>
+          <button class="dark-button" type="button" data-run-research>Run live research workflow</button>
           <div class="export-row">
             <button type="button" data-export="pdf">Export PDF</button>
             <button type="button" data-export="word">Export Word</button>
           </div>
-          <div class="research-status" data-research-status>Ready to run web research.</div>
+          <div class="live-steps" data-research-live-steps aria-label="Research workflow progress"></div>
+          <div class="research-status" data-research-status>Live preview ready. Type a topic or run the workflow.</div>
         </div>
         <article class="report-preview" data-report-preview>
           <span class="mono-label">Report preview</span>
@@ -227,7 +228,7 @@
           <p>Best for local shops, service businesses, online stores, clinics, agencies, and nonprofits that answer the same questions every day.</p>
         </aside>
         <div class="support-console">
-          <label for="support-question">Customer question</label>
+          <label for="support-question">Customer question — answer updates while you type</label>
           <textarea id="support-question" data-support-question>I was charged twice and want a refund now. Can someone help?</textarea>
           <button class="dark-button" type="button" data-run-support>Answer + create ticket</button>
           <div class="quick-prompts support-prompts">
@@ -251,7 +252,7 @@
       </div>
       <div class="ops-layout">
         <aside class="ops-stack"><span class="tag teal" data-doc-stack="langgraph-rag-vector-db">LangGraph + RAG + vector DB</span><h3>Compliance-ready document search</h3><p>Designed for universities, nonprofits, clinics, real estate, and HR teams that need answers with traceable source references.</p></aside>
-        <div class="ops-console"><label for="doc-question">Question across uploaded policies</label><textarea id="doc-question" data-doc-question>Can volunteers access patient records under the clinic privacy policy?</textarea><button class="dark-button" type="button" data-run-doc>Ask documents</button><button type="button" data-compare-docs>Compare documents</button></div>
+        <div class="ops-console"><label for="doc-question">Question across uploaded policies — cited answer updates live</label><textarea id="doc-question" data-doc-question>Can volunteers access patient records under the clinic privacy policy?</textarea><button class="dark-button" type="button" data-run-doc>Ask documents</button><button type="button" data-compare-docs>Compare documents</button></div>
         <aside class="ops-artifacts"><div class="artifact" data-doc-output="answer"><span class="mono-label">Cited answer</span><pre data-doc-answer>No answer yet.</pre></div><div class="artifact" data-doc-output="compare"><span class="mono-label">Document comparison</span><pre data-doc-compare>No comparison yet.</pre></div></aside>
       </div>
     </section>
@@ -264,7 +265,9 @@
       </div>
       <div class="ops-layout">
         <aside class="ops-stack"><span class="tag blue" data-email-stack="openai-agents-gmail-fastapi">Agents SDK + Gmail + FastAPI</span><h3>Inbox work without inbox chaos</h3><p>Turns unread email into an action list with reply drafts, finance extraction, and reminders.</p></aside>
-        <div class="ops-console"><button class="dark-button" type="button" data-run-email>Summarize unread emails</button><button type="button" data-draft-email>Draft client reply</button></div>
+        <div class="ops-console"><label for="email-inbox">Sample unread inbox — edit the messages and the digest updates</label><textarea id="email-inbox" data-email-inbox>client@acme.co | Proposal follow up | urgent | Can you send updated pricing by Friday?
+billing@vendor.com | Invoice #1842 | finance | Attached invoice for $842 due next week.
+events@local.org | Receipt for registration | finance | Receipt total $129.</textarea><button class="dark-button" type="button" data-run-email>Summarize unread emails</button><button type="button" data-draft-email>Draft client reply</button></div>
         <aside class="ops-artifacts"><div class="artifact" data-email-output="summary"><span class="mono-label">Unread digest</span><pre data-email-summary>No digest yet.</pre></div><div class="artifact" data-email-output="reply"><span class="mono-label">Draft reply + reminder</span><pre data-email-reply>No draft yet.</pre></div></aside>
       </div>
     </section>
@@ -277,7 +280,7 @@
       </div>
       <div class="ops-layout">
         <aside class="ops-stack"><span class="tag green" data-scheduling-stack="langgraph-calendar-twilio">LangGraph + Calendar + Twilio</span><h3>Books the appointment and follows up</h3><p>Checks availability, confirms the service, writes to calendar, and sends reminders through WhatsApp or SMS.</p></aside>
-        <div class="ops-console"><label for="schedule-request">Customer request</label><textarea id="schedule-request" data-schedule-request>Book HVAC repair for Ravi Shah on Tuesday afternoon via WhatsApp.</textarea><button class="dark-button" type="button" data-run-scheduling>Book appointment</button><button type="button" data-reschedule>Reschedule to Wednesday</button></div>
+        <div class="ops-console"><label for="schedule-request">Customer request — parser updates the booking live</label><textarea id="schedule-request" data-schedule-request>Book HVAC repair for Ravi Shah on Tuesday afternoon via WhatsApp.</textarea><button class="dark-button" type="button" data-run-scheduling>Book appointment</button><button type="button" data-reschedule>Reschedule to Wednesday</button></div>
         <aside class="ops-artifacts"><div class="artifact" data-scheduling-output="booking"><span class="mono-label">Booking</span><pre data-scheduling-booking>No booking yet.</pre></div><div class="artifact" data-scheduling-output="reminder"><span class="mono-label">Reminder</span><pre data-scheduling-reminder>No reminder yet.</pre></div></aside>
       </div>
     </section>
